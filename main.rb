@@ -1,5 +1,6 @@
 require_relative './lib/switch'
 require_relative './lib/map'
+require_relative './lib/dc'
 
 visitedTown = Switch.new
 injured = Switch.new

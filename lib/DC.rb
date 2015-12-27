@@ -1,14 +1,16 @@
+require_relative 'store'
+require_relative 'actions'
+require_relative 'conditions'
+
 # deathcounter class
 class DC
+  include AndOr
 
   # static
-  @@availableIds = Array.new(256, false)
-  @@claimedIds = Hash.new
-
+  @@store = Store.new(size: 256)
 
   # getters
-  attr_accessor :id, :min, :max, :step, :implicit, :root
-
+  attr_accessor :id, :min, :max, :step, :implicit, :root, :store
 
   #####
   # OPERATIONS
@@ -17,6 +19,7 @@ class DC
   # constructor
   def initialize(options = {})
 
+    self.store =    options[:store] || @@store
     self.max =      options[:max]
     self.min =      options[:min] || 0
     self.step =     options[:step] || 1
@@ -28,16 +31,6 @@ class DC
     #abort("Min can't be greater than max!") if max && min > max
 
   end
-
-
-  # destructor
-  def self.destroy(object_id)
-    id  = @@claimedIds[object_id]
-    puts "DC#{id} -- FREED"
-    @@availableIds[id] = false
-    @@claimedIds.delete(object_id)
-  end
-
 
   # set
   def <<(arg)
@@ -269,31 +262,31 @@ class DC
     end
   end
 
-  private
-
-  def allocateId
-    new_id = getNextId
-    @@claimedIds[object_id] = new_id
-    ObjectSpace.define_finalizer(self, self.class.method(:destroy))
-    new_id
+  def destroy
+    self.class.finalize(store, id).call()
+    ObjectSpace.undefine_finalizer(self)
+    self.id = nil
   end
 
-  def getNextId
-    for i in 0..@@availableIds.size
-      if @@availableIds[i] == false
-        @@availableIds[i] = true
-        return i
-      end
+  def self.finalize(store, id)
+    proc do
+      puts "DC#{id} -- FREED"
+      store.remove(id)
     end
-    abort("ERROR: out of available DCs")
-    return -1
   end
 
   def freeImplicitObjs(*objs)
-    objs.each { |obj|
-      ObjectSpace.undefine_finalizer(obj.root) if obj.is_a?(DC) && obj.root.implicit == true
-      self.class.destroy(obj.root.object_id) if obj.is_a?(DC) && obj.root.implicit == true
-    }
+    objs.each do |obj|
+      obj.destroy if obj.is_a?(DC) && obj.root.implicit
+    end
+  end
+
+  private
+
+  def allocateId
+    new_id = store.allocateId
+    ObjectSpace.define_finalizer(self, self.class.finalize(store, new_id))
+    new_id
   end
 
   def clone(options = {})

@@ -10,9 +10,9 @@ class Switch
   attr_accessor :id, :store, :inverted
 
   def initialize(options = {})
-    @store = options[:store] || @@store
-    @id = options[:id] || allocateId
-    @inverted = options[:inverted] || false
+    @store =    options[:store] || @@store
+    @id =       options[:id] || allocateId
+    @inverted = options.fetch(:inverted, false)
   end
 
   def <<(other)
