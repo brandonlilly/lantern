@@ -11,4 +11,6 @@ lirin._if( test_cond("blue") | test_cond("green") | test_cond("black") )[
   display("blue or green or maybe even black"),
 ]
 
-puts lirin.run
+puts lirin.render_xml
+
+# puts display("blue or green").render_xml

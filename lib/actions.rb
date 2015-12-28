@@ -21,9 +21,34 @@ class Action
     "<Action #{params[:c]} (#{param_render})>"
   end
 
+  def render_xml
+    param_tags = params
+      .reject { |key| params[key].nil? }
+      .map { |key, value| "  <act_#{key}>#{value}</act_#{key}>" }
+      .join("\n")
+
+    "<action>\n#{param_tags}\n</action>"
+  end
+
   def type
     params[:c]
   end
+end
+
+# format helpers
+def format_player(player)
+  plyr = player.to_s.downcase
+  return "Player #{plyr.scan(/p(\d+)/)[0][0]}" if plyr[/p\d+/]
+
+  player
+end
+
+def format_switch_mod(value)
+  return "set" if [true, :set, "set", :true].include?(value)
+  return "clear" if [false, :clear, "clear", :false].include?(value)
+  return "toggle" if [:toggle, "toggle"].include?(value)
+
+  value
 end
 
 def display(text)
@@ -47,14 +72,14 @@ def setSwitch(switch_id, value)
   Action.new(
     c: 'Set Switch',
     gs: switch_id,
-    n:  value # convert to cleared, not set, ect
+    n:  format_switch_mod(value)
   )
 end
 
 def createUnit(player, unit, n, location)
   Action.new(
     c:  'Create Unit',
-    gf: player,
+    gf: format_player(player),
     u:  unit,
     n:  n,
     l:  location

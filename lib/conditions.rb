@@ -1,5 +1,5 @@
 module AndOr
-  
+
   def |(other)
     conditional {|cond| [
       _if(self)[ cond << true ],
@@ -35,6 +35,15 @@ class Condition
       .map {|key| "#{key}: #{params[key]}"}
       .join(', ')
     "<Condition #{params[:c]} (#{param_render})>"
+  end
+
+  def render_xml
+    param_tags = params
+      .reject { |key| params[key].nil? }
+      .map { |key, value| "  <cond_#{key}>#{value}</cond_#{key}>" }
+      .join("\n")
+
+    "<condition>\n#{param_tags}\n</condition>"
   end
 
   def type

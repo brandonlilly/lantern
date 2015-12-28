@@ -28,8 +28,8 @@ class Trigger
        conditions[0].params[:r] == actions[0].params[:gs] &&
        actions[1].params[:gs] == actions[0].params[:gs] &&
        conditions[0].params[:m] == true &&
-       actions[0].params[:n] == false &&
-       actions[1].params[:n] == true
+       actions[0].params[:n] == "clear" &&
+       actions[1].params[:n] == "set"
        return true
      end
     false
@@ -42,9 +42,17 @@ class Trigger
     "TRIGGER #{players.join(", ")}\nCONDITIONS\n#{conditions_render}\nACTIONS\n#{actions_render}\nEND\n\n"
   end
 
+  def render_xml
+    conditions_xml = conditions.map(&:render_xml).join("\n")
+    actions_xml = actions.map(&:render_xml).join("\n")
+    players_xml = players.map { |player| "<trig_group>#{player}</trig_group>" }.join("\n")
+    trig_xml = preserved ? "<trigp/>" : "<trig/>"
+
+    "#{players_xml}\n#{trig_xml}\n#{conditions_xml}\n#{actions_xml}"
+  end
+
   def run
-    trigs = unfold
-    trigs.reject(&:superfluous?).map(&:render).join("\n")
+    unfold.reject(&:superfluous?)
   end
 
   def child_trigger(options)

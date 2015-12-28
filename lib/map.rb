@@ -24,4 +24,10 @@ class Map
   def run
     triggers.map(&:run).join("\n\nnjkjnkjnkjn\n\n")
   end
+
+  def render_xml
+    triggers_xml = triggers.map(&:run).flatten.map(&:render_xml).join("\n\n")
+
+    "<mint>\n#{triggers_xml}\n</mint>"
+  end
 end
