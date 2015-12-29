@@ -18,7 +18,7 @@ end
 
 def format_vmod(value)
   str = value.to_s.downcase
-  return "Set To" if ["set to", "set_to", "set"].include?(str)
+  return "Set To" if ["set to", "set_to", "set", "setto"].include?(str)
   return "Subtract" if str == 'subtract'
   return "Add" if str == 'add'
 
@@ -27,8 +27,8 @@ end
 
 def format_qmod(value)
   str = value.to_s.downcase
-  return "At least" if ["at least", "at_least"].include?(str)
-  return "At most" if ["at most", "at_most"].include?(str)
+  return "At least" if ["at least", "at_least", "atleast"].include?(str)
+  return "At most" if ["at most", "at_most", "atmost"].include?(str)
   return "Exactly" if "exactly" == str
 
   value
