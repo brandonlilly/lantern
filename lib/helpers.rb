@@ -3,14 +3,14 @@ require_relative 'data'
 def format_player(player)
   str = player.to_s.downcase
   return "Player #{str.scan(/(\d+)$/)[0][0]}" if str[/p\d+$/] || str[/player ?\d+$/]
-  return "Force #{str.scan(/p(\d+)/)[0][0]}" if str[/f\d+/]
+  return "Force #{str.scan(/(\d+)$/)[0][0]}" if str[/f\d+/] || str[/force ?\d+$/]
   return "All players" if ['allplayers', 'all players', 'all_players'].include?(str)
   return "Neutral Players" if ['neutral_players', 'neutral players'].include?(str)
   return "Current Player" if ['current player', 'cp', 'current'].include?(str)
   return 'Allies' if str == 'allies'
   return 'Foes' if str == 'foes'
   return 'Player 12' if str == 'neutral'
-  
+
   player
 end
 

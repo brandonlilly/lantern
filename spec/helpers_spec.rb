@@ -24,6 +24,9 @@ describe "Helpers" do
       expect(format_player("foes")).to eq("Foes")
       expect(format_player("allies")).to eq("Allies")
       expect(format_player("CP")).to eq("Current Player")
+      expect(format_player("f1")).to eq("Force 1")
+      expect(format_player("Force2")).to eq("Force 2")
+      expect(format_player("force 3")).to eq("Force 3")
     end
 
     it "handles symbols" do
