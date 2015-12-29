@@ -1,63 +1,83 @@
-# altered Fixnum class
 class Fixnum
-
-  # alias functions
   alias_method :add,  :+
   alias_method :sub,  :-
   alias_method :mult, :*
   alias_method :div,  :/
   alias_method :modu, :%
   alias_method :pow,  :**
+  alias_method :gte, :>=
+  alias_method :lte, :<=
+  alias_method :lt,  :<
+  alias_method :gt,  :>
+  alias_method :eql, :==
 
-  # implement functions
-  def +(arg)
-    if arg.is_a?(DC)
-      return arg + self
-    end
-    self.add(arg)
+  def +(other)
+    return other + self if other.is_a?(Counter)
+    self.add(other)
   end
 
-  def -(arg)
-    if arg.is_a?(DC)
-      return -arg + self
-    end
-    self.sub(arg)
+  def -(other)
+    return -other + self if other.is_a?(Counter)
+    self.sub(other)
   end
 
-  def *(arg)
-    if arg.is_a?(DC)
-      return arg * self
-    end
-    self.mult(arg)
+  def *(other)
+    return other * self if other.is_a?(Counter)
+    self.mult(other)
   end
 
-  def /(arg)
-    if arg.is_a?(DC)
-      dc = DC.new;
+  def /(other)
+    if other.is_a?(Counter)
+      dc = Counter.new;
       return [
         dc << self,
-        dc / arg,
+        dc / other,
       ]
     end
-    self.div(arg)
+
+    self.div(other)
   end
 
-  def %(arg)
-    if arg.is_a?(DC)
-      dc = DC.new;
+  def %(other)
+    if other.is_a?(Counter)
+      dc = Counter.new;
       return [
         dc << self,
-        dc % arg,
+        dc % other,
       ]
     end
-    self.modu(arg)
+
+    self.modu(other)
   end
 
-  def **(arg)
-    if arg.is_a?(DC)
-      raise "EXPONENTIAL NOT IMPLEMENTED"
-    end
-    self.pow(arg)
+  def **(other)
+    raise NotImplementedError if other.is_a?(Counter) # todo
+    self.pow(other)
+  end
+
+  def ==(other)
+    return other == self if other.is_a?(Counter)
+    self.eql(other)
+  end
+
+  def >=(other)
+    return other <= self if other.is_a?(Counter)
+    self.gte(other)
+  end
+
+  def <=(other)
+    return other >= self if other.is_a?(Counter)
+    self.lte(other)
+  end
+
+  def >(other)
+    return other < self if other.is_a?(Counter)
+    self.lt(other)
+  end
+
+  def <(other)
+    return other > self if other.is_a?(Counter)
+    self.gt(other)
   end
 
 end

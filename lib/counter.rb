@@ -31,7 +31,7 @@ class Counter
       self.min = other
       self.max = other
       self.step = 1
-      return setToAction(other)
+      return action('Set To', other)
     end
 
     if other.is_a?(Counter)
@@ -100,6 +100,26 @@ class Counter
 
   def -@
     self * (-1)
+  end
+
+  def ==(other)
+    test_cond("#{self} == #{other}") # todo
+  end
+
+  def >(other)
+    test_cond("#{self} > #{other}") # todo
+  end
+
+  def <(other)
+    test_cond("#{self} < #{other}") # todo
+  end
+
+  def >=(other)
+    test_cond("#{self} >= #{other}") # todo
+  end
+
+  def <=(other)
+    test_cond("#{self} <= #{other}") # todo
   end
 
   # countoff
