@@ -10,25 +10,25 @@ describe "Helpers" do
       end
     end
 
-    it "handles P# string" do
+    it "handles 'P#', 'player #', 'player#'" do
       expect(format_player("P1")).to eq("Player 1")
       expect(format_player("P12")).to eq("Player 12")
-    end
-
-    it "handles P# symbol" do
-      expect(format_player(:P1)).to eq("Player 1")
-      expect(format_player(:P10)).to eq("Player 10")
-    end
-
-    xit "handles lowercase inputs" do
-      expect(format_player("player 2")).to eq("Player 2")
+      expect(format_player("player 9")).to eq("Player 9")
       expect(format_player("player 11")).to eq("Player 11")
-      expect(format_player(:p3)).to eq("Player 3")
+      expect(format_player("player10")).to eq("Player 10")
     end
 
-    xit "handles irregular players" do
+    it "handles uncommon players" do
       expect(format_player("All Players")).to eq("All players")
-      # more
+      expect(format_player("Neutral")).to eq("Player 12")
+      expect(format_player("foes")).to eq("Foes")
+      expect(format_player("allies")).to eq("Allies")
+      expect(format_player("CP")).to eq("Current Player")
+    end
+
+    it "handles symbols" do
+      expect(format_player(:p1)).to eq("Player 1")
+      expect(format_player(:allplayers)).to eq("All players")
     end
   end
 

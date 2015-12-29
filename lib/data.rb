@@ -135,6 +135,24 @@ class Data
     "randomize",
   ]
 
+  # custom
+  VMOD_TYPES = [
+    "Set To",
+    "Add",
+    "Subtract",
+  ]
+
+  QMOD_TYPES = [
+    "At least",
+    "At most",
+    "Exactly",
+  ]
+
+  # SMOD_TYPES = [
+  #   "is set",
+  #   "not set",
+  # ]
+
   UNIT_TYPES = [
     "Terran Marine",
     "Terran Ghost",
