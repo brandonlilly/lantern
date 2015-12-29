@@ -51,6 +51,13 @@ def format_switch_mod(value)
   value
 end
 
+def test_action(text)
+  Action.new(
+    c: "Test",
+    s: text
+  )
+end
+
 def display(text)
   Action.new(
     c: "Display Text Message Always",
