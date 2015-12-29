@@ -70,7 +70,7 @@ class ConditionList < Array
       return self << other
     end
 
-    abort("Unknown parameter: #{other}")
+    raise ArgumentError, "Expecting ConditionList or Condition: #{other}"
   end
 end
 

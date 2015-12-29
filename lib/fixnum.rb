@@ -55,7 +55,7 @@ class Fixnum
 
   def **(arg)
     if arg.is_a?(DC)
-      abort("EXPONENTIAL NOT IMPLEMENTED")
+      raise "EXPONENTIAL NOT IMPLEMENTED"
     end
     self.pow(arg)
   end

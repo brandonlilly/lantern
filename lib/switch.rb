@@ -27,7 +27,7 @@ class Switch
       ]
     end
 
-    abort("Unrecognized parameter.")
+    raise ArgumentError, "Expecting boolean or Switch: #{other}"
   end
 
   def set

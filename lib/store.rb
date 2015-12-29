@@ -23,6 +23,6 @@ class Store
       return i if !availableIds[i]
     end
 
-    abort("No available switches.")
+    raise "No available switches."
   end
 end

@@ -27,7 +27,7 @@ class DC
     self.root =     options[:root] || self
 
     puts("#{self} -- CREATED") if options[:id] == nil
-    #abort("Min can't be greater than max!") if max && min > max
+    #raise ArgumentError, "Min can't be greater than max!" if max && min > max
 
   end
 
@@ -45,7 +45,7 @@ class DC
       self.max = arg.max
       self.step = arg.step.abs
     else
-      abort("<<: need Integer or DC")
+      raise ArgumentError, "Need Integer or DC"
     end
 
     # perform transfer
@@ -95,8 +95,7 @@ class DC
 
     end
 
-    abort("+: need Integer or DC")
-
+    raise ArgumentError, "+: need Integer or DC"
   end
 
 
@@ -134,8 +133,7 @@ class DC
       return dc
     end
 
-    abort("*: need Integer or DC")
-
+    raise ArgumentError, "*: need Integer or DC"
   end
 
 
@@ -156,7 +154,7 @@ class DC
       # TODO: do this entire section
     end
 
-    abort("*: need Integer or DC")
+    raise ArgumentError, "*: need Integer or DC"
 
   end
 
@@ -166,10 +164,16 @@ class DC
   ###
 
   # set DC
-  def set(arg)
-    puts "#{self} -- SET"
-    puts "   DC#{id} = #{min}"
-    arg.countoff(self) if arg.is_a?(DC)
+  def set(other)
+    if other.is_a?(Integer)
+      return setDeaths("Player 1", "Set to", other, "Terran Marine")
+    end
+
+    if other.is_a?(DC)
+      other.countoff(self)
+    end
+
+    raise ArgumentError
   end
 
   # add DC
@@ -186,9 +190,9 @@ class DC
     objs.pop if objs.last.is_a?(Integer)
 
     # handle errors
-    abort("ERROR: countoff requires at least one DC as input (optional multiplier on end)") if objs.size == 0
+    raise ArgumentError, "At least one DC required as input (optional multiplier on end)" if objs.size == 0
     unless objs.all? { |obj| obj.is_a?(DC) }
-      abort("ERROR: countoff requires DC(s) as input (optional multiplier on end)")
+      raise ArgumentError, "Countoff requires DC(s) as input (optional multiplier on end)"
     end
 
     # allocate temp DC
@@ -236,9 +240,11 @@ class DC
   # error check
   def errorCheckObj(*objs)
     unless objs.all? { |obj| !obj.is_a?(DC) || obj.bounded? }
-      abort("ERROR: DC must have defined bounds before it is used! " +
-            "Consider defining bounds when it is declared, " +
-            "ie. myDC = DC.new(min: -1, max: 5)")
+      raise ArgumentError, <<-MSG
+      DC must have defined bounds before it is used!
+      Consider defining bounds when it is declared,
+      ie. myDC = DC.new(min: -1, max: 5)"
+      MSG
     end
   end
 

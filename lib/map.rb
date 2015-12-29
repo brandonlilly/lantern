@@ -22,7 +22,7 @@ class Map
   end
 
   def render
-    triggers.map(&:run).join("\n\n")
+    triggers.map(&:run).flatten.map(&:render).join("\n\n")
   end
 
   def render_xml
