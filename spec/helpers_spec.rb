@@ -1,4 +1,4 @@
-require_relative "../lib/actions"
+require_relative "../lib/helpers"
 require_relative "../lib/data"
 
 describe "Helpers" do

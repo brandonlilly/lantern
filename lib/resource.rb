@@ -14,18 +14,6 @@ class Resource
     setResources(player, vmod, amount, resource)
   end
 
-  # def setToAction(amount)
-  #   setResources(player, "Set to", amount, resource)
-  # end
-  #
-  # def addAction(amount)
-  #   setResources(player, "Add", amount, resource)
-  # end
-  #
-  # def subtractAction(amount)
-  #   setResources(player, "Subtract", amount, resource)
-  # end
-
   def clone_defaults
     { player: player, resource: resource }
   end
