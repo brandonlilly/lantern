@@ -21,8 +21,8 @@ class Map
     trigger
   end
 
-  def run
-    triggers.map(&:run).join("\n\nnjkjnkjnkjn\n\n")
+  def render
+    triggers.map(&:run).join("\n\n")
   end
 
   def render_xml
