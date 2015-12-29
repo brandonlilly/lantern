@@ -8,9 +8,10 @@ def format_player(player)
 end
 
 def format_switch_mod(value)
-  return "set" if [true, :set, "set", :true].include?(value)
-  return "clear" if [false, :clear, "clear", :false].include?(value)
-  return "toggle" if [:toggle, "toggle"].include?(value)
+  str = value.to_s.downcase
+  return "set" if ["set", "true"].include?(str)
+  return "clear" if ["false", "clear", :false].include?(str)
+  return "toggle" if "toggle" == str
 
   value
 end
