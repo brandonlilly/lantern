@@ -17,7 +17,6 @@ class DC
 
   # constructor
   def initialize(options = {})
-
     self.store =    options[:store] || @@store
     self.max =      options[:max]
     self.min =      options[:min] || 0
@@ -28,7 +27,6 @@ class DC
 
     puts("#{self} -- CREATED") if options[:id] == nil
     #raise ArgumentError, "Min can't be greater than max!" if max && min > max
-
   end
 
   # set
@@ -50,13 +48,11 @@ class DC
 
     # perform transfer
     set(arg)
-
   end
 
 
   # addition
   def +(arg)
-
     errorCheckObj(self, arg)
 
     if arg.is_a?(Integer)
@@ -101,10 +97,11 @@ class DC
 
   # subtraction and negation
   def -(arg)
-    return self + -arg
+    self + -arg
   end
+
   def -@
-    return self * (-1)
+    self * (-1)
   end
 
 
@@ -139,7 +136,6 @@ class DC
 
   # division
   def /(arg)
-
     errorCheckObj(self, arg)
 
     if arg.is_a?(Integer)
@@ -155,7 +151,6 @@ class DC
     end
 
     raise ArgumentError, "*: need Integer or DC"
-
   end
 
 
@@ -318,6 +313,7 @@ class DC
     "DC#{id}"
     # max == nil ? "DC#{id} [undefined]" : "DC#{id} [#{min}..#{max}, step=#{step}]"
   end
+
   def inspect
     "DC#{id}"
   end
