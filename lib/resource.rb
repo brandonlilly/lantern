@@ -1,4 +1,7 @@
-class Resource
+require_relative 'actions'
+require_relative 'conditions'
+
+class Resource < Counter
   attr_accessor :player, :resource
 
   def post_initialize(options = {})
