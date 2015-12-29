@@ -74,17 +74,17 @@ class DC
       end
 
       if leastCountoffCost(arg) == arg
-        arg.max += max
-        arg.min + min
+        arg.max += self.max
+        arg.min + self.min
         arg.step = step.gcd(arg.step)
-        add(arg)
+        self.add(arg)
         return arg
       end
 
       if leastCountoffCost(arg) == self
-        max += arg.max
-        min + arg.min
-        step = step.gcd(arg.step)
+        self.max += arg.max
+        self.min + arg.min
+        self.step = step.gcd(arg.step)
         arg.add(self)
         return self
       end
@@ -104,14 +104,14 @@ class DC
     self * (-1)
   end
 
-
   # multiplication
   def *(arg)
 
     errorCheckObj(self, arg)
 
     if arg.is_a?(Integer)
-      return clone(max: [max * arg, min * arg].max, min: [max * arg, min * arg].min, step: step * arg)
+      bounds = [max * other, min * other]
+      return clone(max: bounds.max, min: bounds.min, step: step * other)
     end
 
     if arg.is_a?(DC) && root === arg.root
@@ -119,11 +119,8 @@ class DC
     end
 
     if arg.is_a?(DC)
-      bound1 = min * arg.min
-      bound2 = min * arg.max
-      bound3 = max * arg.min
-      bound4 = max * arg.max
-      dc = self.class.new(max: [bound1, bound2, bound3, bound4].max, min: [bound1, bound2, bound3, bound4].min, step: step * arg.step, implicit: true)
+      bounds = [min * other.min, min * other.max, max * other.min, max * other.max]
+      dc = DC.temp(max: bounds.max, min: bounds.min, step: step * other.step)
       # TODO: multiplication triggers
       # (X * Y) + (X * B) + (Y * A) + (A * B) - result.min
       freeImplicitObjs(self, arg)
@@ -154,6 +151,20 @@ class DC
   end
 
 
+  ##### Counter Implementation details
+
+  def setToAction(other)
+    setDeaths("Player 1", "Set to", other, "Terran Marine")
+  end
+
+  def addAction(other)
+    setDeaths("Player 1", "Add", other, "Terran Marine")
+  end
+
+  def subtractAction(other)
+    setDeaths("Player 1", "Add", other, "Terran Marine")
+  end
+
   #####
   # TRIGGERS
   ###
@@ -161,7 +172,7 @@ class DC
   # set DC
   def set(other)
     if other.is_a?(Integer)
-      return setDeaths("Player 1", "Set to", other, "Terran Marine")
+      return setToAction(other)
     end
 
     if other.is_a?(DC)
@@ -178,53 +189,67 @@ class DC
   end
 
   # countoff
-  def countoff(*objs)
-
+  def countoff(*args)
     # prep
-    objs.last.is_a?(Integer) ? coef = objs.last : coef = 1
-    objs.pop if objs.last.is_a?(Integer)
+    coef = args.last.is_a?(Integer) ? args.last : 1
+    objs = args.last.is_a?(Integer) ? args[0..-2] : args
 
-    # handle errors
-    raise ArgumentError, "At least one DC required as input (optional multiplier on end)" if objs.size == 0
-    unless objs.all? { |obj| obj.is_a?(DC) }
+    if objs.empty? || !objs.all? { |obj| obj.is_a?(DC) }
       raise ArgumentError, "Countoff requires DC(s) as input (optional multiplier on end)"
     end
 
+    actions = []
+
     # allocate temp DC
-    temp = self.class.new(max: (root.max - root.min) / root.step, min: 0, implicit: true) if root.implicit == false
-
-    # # preliminary
-    # printf "  COUNTOFF #{root} --> "
-    # objs.each { |obj| printf "#{obj}, "}
-    # puts "\b\b "
-    objs.each {|obj| puts("   DC#{obj.id} += #{max - min}")} if step < 0 && max != 0
-    puts "   DC#{temp.id} = 0" if root.implicit == false
-    puts "   DC#{root.id} -= #{root.min}" if root.min != 0
-
-    # countoff
-    k = nearestPower((root.max - root.min) / root.step)
-    while k >= 1
-      printf "   IF DC#{root.id} >= #{k*root.step} THEN  "
-      # objs.each { |obj| printf "DC#{obj.id} += #{coef*k*obj.step}, "}
-      objs.each { |obj| printf "DC#{obj.id} += #{coef*k*step}, "}
-      root.implicit == false ? puts("DC#{root.id} -= #{k*root.step}, DC#{temp.id} += #{k}") : puts("DC#{root.id} -= #{k*root.step}")
-      k = k/2
+    if !root.implicit
+      temp = self.class.new(
+        min: 0,
+        max: (root.max - root.min) / root.step,
+        implicit: true
+      )
     end
 
-    # countback
-    temp.countoff(root) if root.implicit == false
+    # preliminary
+    actions << objs.map { |obj| obj.add(max - min) } if step > 0 && max != 0
+    actions << temp.set(0) if !root.implicit
+    actions << root.subtract(root.min) if root.min != 0
+
+    # countoff
+    power = nearestPower((root.max - root.min) / root.step)
+    each_power(power) do |k|
+      actions << _if( root >= k * root.step )[
+        objs.map { |obj| obj.add(coef * k * step) },
+
+        !root.implicit ?
+          [ root.subtract(k * root * step), temp.add(temp + k) ] :
+          [ root.subtract(k * root.step) ],
+      ]
+    end
+
+    # count back
+    actions << temp.countoff(root) if !root.implicit
 
     # post
-    puts "   DC#{root.id} += #{root.min}" if root.implicit == false && min != 0
-    puts "   DC#{root.id} = 0" if root.implicit == true
-    freeImplicitObjs(self) if root.implicit == true
+    actions << root += root.min if !root.implicit && min != 0
+    actions << root << 0 if root.implicit
 
+    freeImplicitObjs(self) if root.implicit
+
+    actions
   end
 
 
   #####
   # HELPERS
   ###
+
+  def each_power(power, &block)
+    k = power
+    while k >= 1
+      block.call(k)
+      k = k / 2
+    end
+  end
 
   def nearestPower(num)
     i = 1
