@@ -40,3 +40,7 @@ def format_qmod(value)
 
   value
 end
+
+def format_resource_type(type)
+  type
+end

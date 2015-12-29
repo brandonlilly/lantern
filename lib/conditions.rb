@@ -1,3 +1,4 @@
+require_relative 'helpers'
 require_relative 'condition'
 
 def test_cond(text)
@@ -7,12 +8,22 @@ def test_cond(text)
   )
 end
 
+def accumulate(player, qmod, n, resource_type)
+  Condition.new(
+    c: 'Accumulate',
+    g: format_player(player),
+    m: format_qmod(qmod),
+    n: n,
+    r: format_resource_type(resource_type),
+  )
+end
+
 def deaths(player, qmod, n, unit)
   Condition.new(
 		c: 'Deaths',
-		g: player,
+		g: format_player(player),
 		u: unit,
-		m: qmod,
+		m: format_qmod(qmod),
 		n: n,
     format: [:g, :u, :m, :n]
 	)
@@ -24,8 +35,4 @@ def switchIsState(id, state)
     r: id,
     m: state # 'is set' or 'not set'
   )
-end
-
-def accumulate()
-
 end

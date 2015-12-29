@@ -2,6 +2,7 @@ require_relative 'store'
 require_relative 'actions'
 require_relative 'conditions'
 require_relative 'counter'
+require_relative 'fixnum'
 
 class DC < Counter
   @@store = Store.new(size: 256)

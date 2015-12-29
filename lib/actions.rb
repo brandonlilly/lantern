@@ -1,3 +1,4 @@
+require_relative 'helpers'
 require_relative 'action'
 
 def test_action(text)
@@ -63,7 +64,7 @@ def setResources(player, vmod, n, resource_type)
     gf: format_player(player),
     n:  format_vmod(vmod),
     gs: n,
-    u:  resource_type
+    u:  format_resource_type(resource_type)
   )
 end
 
