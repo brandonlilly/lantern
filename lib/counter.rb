@@ -18,15 +18,11 @@ class Counter
     nil
   end
 
-  def setToAction(other)
+  def action(vmod, amount)
     raise NotImplementedError
   end
 
-  def addAction(other)
-    raise NotImplementedError
-  end
-
-  def subtractAction(other)
+  def condition(qmod, amount)
     raise NotImplementedError
   end
 
@@ -55,7 +51,6 @@ class Counter
     end
 
     if other.is_a?(Counter)
-      # todo
       return test_action("#{self} + #{other}")
     end
 
@@ -74,7 +69,7 @@ class Counter
       return dc # todo
     end
 
-    raise ArgumentError, "Need Integer or DC"
+    raise ArgumentError, "Need Integer or Counter"
   end
 
   def /(other)
@@ -96,7 +91,7 @@ class Counter
       # todo: do this entire section
     end
 
-    raise ArgumentError, "Need Integer or DC"
+    raise ArgumentError, "Need Integer or Counter"
   end
 
   def -(other)
@@ -160,13 +155,16 @@ class Counter
   protected
 
   def clone(options = {})
+    defaults = { max: max, min: min, step: step }
     self.class.new(
-      options.merge(
-        max:  options[:max]  || max,
-        min:  options[:min]  || min,
-        step: options[:step] || step,
-      )
+      defaults
+        .merge(clone_defaults)
+        .merge(options)
     )
+  end
+
+  def clone_defaults
+    {}
   end
 
   def freeImplicitObjs(*objs)

@@ -29,16 +29,12 @@ class DC < Counter
     "Terran Marine"
   end
 
-  def setToAction(other)
-    setDeaths(player, "Set to", other, unit)
+  def action(vmod, amount)
+    setDeaths(player, vmod, amount, unit)
   end
 
-  def addAction(other)
-    setDeaths(player, "Add", other, unit)
-  end
-
-  def subtractAction(other)
-    setDeaths(player, "Add", other, unit)
+  def condition(qmod, amount)
+    deaths(player, qmod, amount, unit)
   end
 
   def destroy

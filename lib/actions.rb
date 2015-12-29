@@ -51,6 +51,17 @@ def format_switch_mod(value)
   value
 end
 
+def format_vmod(value)
+  str = value.to_s.downcase
+  return "Set To" if ["set to", "set_to", "set"].include?(str)
+  return "Subtract" if str == 'subtract'
+  return "Add" if str == 'add'
+
+  value
+end
+
+# actions
+
 def test_action(text)
   Action.new(
     c: "Test",
@@ -62,24 +73,6 @@ def display(text)
   Action.new(
     c: "Display Text Message Always",
     s: text
-  )
-end
-
-def setDeaths(player, vmod, n, unit)
-  Action.new(
-    c:  'Set Deaths',
-    gf: player,
-    n:  vmod,
-    gs: n,
-    u:  unit
-  )
-end
-
-def setSwitch(switch_id, value)
-  Action.new(
-    c: 'Set Switch',
-    gs: switch_id,
-    n:  format_switch_mod(value)
   )
 end
 
@@ -113,5 +106,33 @@ def moveUnit(player, unit, n, at_loc, to_loc)
     l:  at_loc,
     gs: to_loc,
     format: [:gf, :u, :n, :l, :gs]
+  )
+end
+
+def setDeaths(player, vmod, n, unit)
+  Action.new(
+    c:  'Set Deaths',
+    gf: format_player(player),
+    n:  format_vmod(vmod),
+    gs: n,
+    u:  unit
+  )
+end
+
+def setResources(player, vmod, n, resource_type)
+  Action.new(
+    c: 'Set Resources',
+    gf: format_player(player),
+    n:  format_vmod(vmod),
+    gs: n,
+    u:  resource_type
+  )
+end
+
+def setSwitch(switch_id, value)
+  Action.new(
+    c: 'Set Switch',
+    gs: switch_id,
+    n:  format_switch_mod(value)
   )
 end
