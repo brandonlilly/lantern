@@ -1,4 +1,5 @@
-## Parameter Types
+# Parameter Types
+All arguments are case insensitive, or can be specified through symbols (e.g. :toggle)
 
 ## Qmod
 `'At least'`
