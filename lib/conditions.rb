@@ -33,6 +33,6 @@ def switchIsState(id, state)
   Condition.new(
     c: 'Switch',
     r: id,
-    m: format_switch_cond_mod(state)
+    m: format_switch_state(state)
   )
 end

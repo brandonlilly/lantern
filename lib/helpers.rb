@@ -23,7 +23,7 @@ def format_switch_mod(value)
   value
 end
 
-def format_switch_cond_mod(value)
+def format_switch_state(value)
   str = value.to_s.downcase
   return "is set" if ["is set", "set", "is_set", "isset", "true"].include?(str)
   return "not set" if ["clear", "not set", "not_set", "notset", "false"].include?(str)

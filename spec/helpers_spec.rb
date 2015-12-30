@@ -56,4 +56,25 @@ describe "Helpers" do
     end
   end
 
+  describe "format_switch_state" do
+    it "handles booleans" do
+      expect(format_switch_state(true)).to eq("is set")
+      expect(format_switch_state(false)).to eq("not set")
+    end
+
+    it "handles aliases" do
+      expect(format_switch_state("IsSet")).to eq("is set")
+      expect(format_switch_state("set")).to eq("is set")
+      expect(format_switch_state(:is_set)).to eq("is set")
+      expect(format_switch_state("NotSet")).to eq("not set")
+      expect(format_switch_state(:not_set)).to eq("not set")
+      expect(format_switch_state("clear")).to eq("not set")
+    end
+
+    it "allows properly formatted to pass" do
+      expect(format_switch_state("is set")).to eq("is set")
+      expect(format_switch_state("not set")).to eq("not set")
+    end
+  end
+
 end
