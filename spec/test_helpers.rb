@@ -61,7 +61,6 @@ class TestSwitch
 
   def initialize(options = {})
     @id = options[:id] || allocateId
-    @inverted = options.fetch(:inverted, false)
   end
 
   def allocateId
@@ -72,7 +71,7 @@ class TestSwitch
     Condition.new(
       c: 'Test',
       r: id,
-      m: inverted ? false : true
+      m: true
     )
   end
 
@@ -80,7 +79,7 @@ class TestSwitch
     Condition.new(
       c: 'Test',
       r: id,
-      m: inverted ? true : false
+      m: false
     )
   end
 
@@ -88,14 +87,9 @@ class TestSwitch
     set?
   end
 
-  def !
-    clone(inverted: !inverted)
-  end
-
   def clone(options = {})
     self.class.new(
-      id:       options[:id] || id,
-      implicit: options.fetch(:inverted, inverted)
+      id: options[:id] || id
     )
   end
 end

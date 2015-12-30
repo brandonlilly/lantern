@@ -133,6 +133,61 @@ describe Trigger do
         expect(success).to eq( (a || b) && (b || c) )
       end
     end
+
+    it "(a | b) | !(c | d)" do
+      a = TestSwitch.new
+      b = TestSwitch.new
+      c = TestSwitch.new
+      d = TestSwitch.new
+
+      trigger =
+      _if( (a | b) | !(c | d) )[
+        success
+      ]
+
+      each_perm(trigger, [a, b, c, d]) do |success, a, b, c, d|
+        expect(success).to eq( (a || b) || !(c || d) )
+      end
+    end
+
+    it "!!(a | b)" do
+      a, b = @a, @b
+
+      trigger =
+      _if( !!(a | b) )[
+        success
+      ]
+
+      each_perm(trigger, [a, b]) do |success, a, b|
+        expect(success).to eq( a || b )
+      end
+    end
+
+    it "really complicated conditions" do
+      a, b, c, d = TestSwitch.new, TestSwitch.new, TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( !(a & !(c | d) | !b) )[
+        _if( (c | d | b) & a )[
+          display("red herring"),
+          _if( !d )[
+            display("another red herring"),
+          ]
+        ],
+        _if( a & !(c & d & b) | a )[
+          _if( !d | !c)[
+            success
+          ]
+        ],
+        _if( a )[
+          display("red herring the third")
+        ]
+      ]
+
+      each_perm(trigger, [a, b, c, d]) do |success, a, b, c, d|
+        expect(success).to eq( !(a && !(c || d) || !b) && (a && !(c && d && b) || a) && (!d || !c) )
+      end
+    end
   end
 
 end
