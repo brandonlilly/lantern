@@ -135,6 +135,18 @@ class Data
     "randomize",
   ]
 
+  RESOURCE_TYPES = [
+  	"ore",
+  	"gas",
+  	"ore and gas",
+  ]
+
+  ORDER_TYPES = [
+    "move",
+    "patrol",
+    "attack",
+  ]
+
   # custom
   VMOD_TYPES = [
     "Set To",
