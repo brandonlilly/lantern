@@ -8,6 +8,13 @@ def test_action(text)
   )
 end
 
+def centerView(location)
+  Action.new(
+    c: 'Center View',
+    l: location
+  )
+end
+
 def display(text)
   Action.new(
     c: "Display Text Message Always",

@@ -1,4 +1,4 @@
-# Reference
+## Parameter Types
 
 ## Qmod
 `'At least'`
