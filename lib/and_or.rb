@@ -1,5 +1,4 @@
 module AndOr
-
   def |(other)
     conditional {|cond| [
       _if(self)[ cond << true ],
@@ -9,6 +8,12 @@ module AndOr
 
   def &(other)
     ConditionList.new.concat([self, other])
+  end
+
+  def !
+    conditional(inverted: true) {|cond| [
+      _if(self)[ cond << true ]
+    ]}
   end
 end
 
@@ -29,32 +34,43 @@ class ConditionList < Array
 
     raise ArgumentError, "Expecting ConditionList or Condition: #{other}"
   end
+
 end
 
 class Conditional
   include AndOr
 
-  attr_accessor :actions, :action_block
+  attr_accessor :action_block, :inverted
 
-  def initialize(action_block)
+  def initialize(options = {}, action_block)
     @action_block = action_block
+    @inverted = options.fetch(:inverted, false)
   end
 
-  def *(other)
-    ->(*args) { self[*other[*args]] }
+  def !
+    clone(inverted: !inverted)
   end
 
+  alias_method :or, :|
   def |(other)
+    return self.or(other) if inverted
+
     old_proc = action_block
     new_block = Proc.new do |cond|
       actions = old_proc.call(cond)
       actions.concat([ _if( other )[ cond << true ] ])
     end
 
-    Conditional.new(new_block)
+    self.class.new(new_block)
+  end
+
+  def clone(options = {})
+    self.class.new({
+      inverted: options.fetch(:inverted, inverted),
+    }, action_block)
   end
 end
 
-def conditional(&action_block)
-  Conditional.new(action_block)
+def conditional(options = {}, &action_block)
+  Conditional.new(options, action_block)
 end

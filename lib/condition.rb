@@ -37,6 +37,11 @@ class Condition
     params[:c]
   end
 
+
+  def type?(cond_type)
+    cond_type == type
+  end
+
   def to_cond
     self
   end

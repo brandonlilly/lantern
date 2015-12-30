@@ -1,3 +1,7 @@
+require_relative 'actions'
+require_relative 'conditions'
+require_relative 'switch'
+
 class Trigger
   attr_accessor :conditions, :actions, :preserved, :players
 
@@ -70,13 +74,29 @@ class Trigger
       end
 
       if condition.is_a?(Conditional)
-        cond = Switch.new
-        cond_switches << cond
+        if !condition.inverted
+          cond = Switch.new
+          cond_switches << cond
 
-        block_actions = condition.action_block.call(cond)
-        current_trig.actions << [ cond << false, block_actions ]
-        trigs.concat(current_trig.unfold)
-        current_trig = Trigger.new(conditions: [cond.set?], players: players)
+          block_actions = condition.action_block.call(cond)
+          current_trig.actions << [ cond << false, block_actions ]
+          trigs.concat(current_trig.unfold)
+          current_trig = Trigger.new(conditions: [cond.set?], players: players)
+        else
+          cond = Switch.new
+          cond_switches << cond
+
+          block_actions = condition.action_block.call(cond)
+          current_trig.actions << [
+            cond << false,
+            block_actions,
+          ]
+          trigs.concat(current_trig.unfold)
+          current_trig = Trigger.new(
+            players: players,
+            conditions: [cond.clear?]
+          )
+        end
       end
     end
 

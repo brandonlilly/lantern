@@ -33,4 +33,12 @@ class Action
   def type
     params[:c]
   end
+
+  def type?(action_type)
+    action_type == type
+  end
+
+  def to_s
+    inspect
+  end
 end
