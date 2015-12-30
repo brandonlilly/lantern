@@ -33,6 +33,6 @@ def switchIsState(id, state)
   Condition.new(
     c: 'Switch',
     r: id,
-    m: state # 'is set' or 'not set'
+    m: format_switch_cond_mod(state)
   )
 end

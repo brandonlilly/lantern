@@ -23,7 +23,9 @@ def each_perm(trigger, vars, &test_block)
 
     unfolded_trigs.each do |trigger|
       run = trigger.conditions.all? do |condition|
-        next switches[condition.params[:r]] == condition.params[:m] if condition.type?('Switch')
+        if condition.type?('Switch')
+          next switches[condition.params[:r]] == (condition.params[:m] == "is set")
+        end
 
         if condition.type?('Test')
           var = vars.find { |var| var.id == condition.params[:r] }
