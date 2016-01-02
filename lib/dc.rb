@@ -16,7 +16,7 @@ class DC < Counter
     self.implicit = options.fetch(:implicit, false)
   end
 
-  def temp(options = {})
+  def self.temp(options = {})
     self.class.new(options.merge(
       implicit: true
     ))
