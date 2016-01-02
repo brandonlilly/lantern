@@ -60,7 +60,7 @@ class Product < Grouping
   end
 
   def *(other)
-    other = Product.new(other) if other.is_a?(DC)
+    other = Product.new(other) if other.is_a?(Counter)
     if other.is_a?(Integer)
       return 0 if other == 0
       self.constant *= other
@@ -81,7 +81,7 @@ class Sum < Grouping
   end
 
   def +(other)
-    other = Product.new(other) if other.is_a?(DC)
+    other = Product.new(other) if other.is_a?(Counter)
     if other.is_a?(Integer)
       self.constant += other
     elsif other.is_a?(Product)
