@@ -4,15 +4,14 @@ require_relative 'conditions'
 
 class Switch
   include AndOr
+  include StoreId
 
-  @@store = Store.new(size: 256)
-
-  attr_accessor :id, :store, :inverted
+  attr_accessor :inverted
 
   def initialize(options = {})
-    @store =    options[:store] || @@store
-    @id =       options[:id] || allocateId
     @inverted = options.fetch(:inverted, false)
+
+    initialize_store(options)
   end
 
   def <<(other)
@@ -39,10 +38,9 @@ class Switch
   end
 
   def toggle
-    setSwitch(id, :toggle) # for now
+    setSwitch(id, :toggle)
   end
 
-  # probably want to preserve original functionality somehow
   def ==(other)
     if other.is_a?(TrueClass) || other.is_a?(FalseClass)
       return switchIsState(id, inverted ? !other : other)
@@ -79,27 +77,8 @@ class Switch
     self.class.new(
       store:    options[:store] || store,
       id:       options[:id] || id,
+      implicit: options.fetch(:implicit, implicit),
       inverted: options.fetch(:inverted, inverted)
     )
-  end
-
-  def destroy
-    self.class.finalize(store, id).call()
-    ObjectSpace.undefine_finalizer(self)
-    self.id = nil
-  end
-
-  def self.finalize(store, id)
-    proc do
-      store.remove(id)
-    end
-  end
-
-  private
-
-  def allocateId
-    new_id = store.allocateId
-    ObjectSpace.define_finalizer(self, self.class.finalize(store, new_id))
-    new_id
   end
 end

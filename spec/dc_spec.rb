@@ -8,8 +8,8 @@ describe DC do
 
   describe "#initialize" do
     it "allocates an unused id" do
-      first = DC.new(store: @store)
-      second = DC.new(store: @store)
+      first = DC.temp(store: @store)
+      second = DC.temp(store: @store)
 
       expect(first.id).to eq(0)
       expect(second.id).to eq(1)
@@ -18,17 +18,17 @@ describe DC do
 
   describe "#destroy" do
     it "deallocates the id" do
-      first = DC.new(store: @store)
-      second = DC.new(store: @store)
+      first = DC.temp(store: @store)
+      second = DC.temp(store: @store)
       first.destroy
-      third = DC.new(store: @store)
+      third = DC.temp(store: @store)
 
       expect(second.id).to eq(1)
       expect(third.id).to eq(0)
     end
 
     it "sets its id to nil" do
-      dc = DC.new(store: @store)
+      dc = DC.temp(store: @store)
       dc.destroy
       expect(dc.id).to eq(nil)
     end

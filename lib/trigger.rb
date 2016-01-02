@@ -75,7 +75,7 @@ class Trigger
 
       if condition.is_a?(Conditional)
         if !condition.inverted
-          cond = Switch.new
+          cond = Switch.temp
           cond_switches << cond
 
           block_actions = condition.action_block.call(cond)
@@ -83,7 +83,7 @@ class Trigger
           trigs.concat(current_trig.unfold)
           current_trig = Trigger.new(conditions: [cond.set?], players: players)
         else
-          cond = Switch.new
+          cond = Switch.temp
           cond_switches << cond
 
           block_actions = condition.action_block.call(cond)
@@ -106,7 +106,7 @@ class Trigger
       end
 
       if action.is_a?(Trigger)
-        temp = Switch.new
+        temp = Switch.temp
         current_trig.actions << (temp << true)
         trigs << current_trig
         trigger = action
