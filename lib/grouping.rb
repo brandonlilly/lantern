@@ -2,8 +2,8 @@ class Grouping
   attr_accessor :constant, :list
 
   def initialize(other)
-    self.constant = 1
     self.list = [other]
+    self.constant = constant_default
 
     post_initialize(other)
   end
@@ -13,6 +13,10 @@ class Grouping
   end
 
   def symbol
+    raise NotImplementedError
+  end
+
+  def constant_default
     raise NotImplementedError
   end
 
@@ -51,6 +55,10 @@ class Grouping
 end
 
 class Product < Grouping
+  def constant_default
+    1
+  end
+
   def symbol
     :*
   end
@@ -76,6 +84,10 @@ class Product < Grouping
 end
 
 class Sum < Grouping
+  def constant_default
+    0
+  end
+
   def symbol
     :+
   end
