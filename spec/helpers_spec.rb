@@ -77,4 +77,22 @@ describe "Helpers" do
     end
   end
 
+  describe "format_resource_type" do
+    it "handles aliases" do
+      expect(format_resource_type(:Ore)).to eq("ore")
+      expect(format_resource_type("minerals")).to eq("ore")
+      expect(format_resource_type(:gas)).to eq("gas")
+      expect(format_resource_type(:vespene)).to eq("gas")
+      expect(format_resource_type('Vespene Gas')).to eq("gas")
+      expect(format_resource_type("oReAnDGas")).to eq("ore and gas")
+      expect(format_resource_type("both")).to eq("ore and gas")
+    end
+
+    it "allows properly formatted to pass" do
+      expect(format_resource_type("ore")).to eq("ore")
+      expect(format_resource_type("gas")).to eq("gas")
+      expect(format_resource_type("ore and gas")).to eq("ore and gas")
+    end
+  end
+
 end

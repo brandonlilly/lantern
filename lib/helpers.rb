@@ -49,6 +49,11 @@ def format_qmod(value)
   value
 end
 
-def format_resource_type(type)
+def format_resource_type(value)
+  str = value.to_s.downcase
+  return "ore" if ['ore', 'minerals'].include?(str)
+  return "gas" if ['gas', 'vespene', 'vespene gas', 'vespenegas'].include?(str)
+  return "ore and gas" if ["ore and gas", "oreandgas", "both"].include?(str)
+
   type
 end
