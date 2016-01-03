@@ -5,6 +5,8 @@
   * [Examples](/docs/introduction/examples.md)
 * [Basics](/docs/basics/readme.md)
   * [Triggers](/docs/basics/triggers.md)
+* [Advanced](/docs/basics/readme.md)
+  * [Custom Functions](/docs/basics/custom.md)
 * [Reference](/docs/reference/readme.md)
   * [Conditions](/docs/reference/conditions.md)
   * [Actions](/docs/reference/actions.md)
