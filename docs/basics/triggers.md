@@ -40,12 +40,17 @@ This means that you **must** wrap comparators conditions in parentheses if you i
 ```ruby
 # bad
 _if( dc < 10 | dc > 50 )[
-  display("This won't parse correctly. You'll get an error.")
+  display("You'll get an error if you try this.")
 ]
 
 # good
 _if( (dc < 10) | (dc > 50) )[
-  display("Behaves as intended.")
+  display("Behaves as expected.")
+]
+
+# good
+_if( dc < 10 )[
+  display("No wrapping needed since it's the only condition"),
 ]
 ```
 
