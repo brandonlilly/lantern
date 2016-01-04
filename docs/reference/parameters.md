@@ -7,7 +7,7 @@ All arguments are case insensitive, or can be specified through symbols (e.g. :t
 `'Exactly'`
 
 ## Vmod
-`'Set to'`
+`'Set To'`
 `'Add'`
 `'Subtract'`
 

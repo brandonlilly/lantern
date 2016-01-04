@@ -163,6 +163,26 @@ describe Trigger do
       end
     end
 
+    it "custom conditional" do
+      def xor(cond1, cond2)
+        conditional {|cond| [
+          _if(cond1)[cond.toggle],
+          _if(cond2)[cond.toggle],
+        ]}
+      end
+
+      a, b, c, d = TestSwitch.new, TestSwitch.new, TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( xor(a, b) | xor(c, d) )[
+        success()
+      ]
+
+      each_perm(trigger, [a, b, c, d]) do |success, a, b, c, d|
+        expect(success).to eq( a ^ b || c ^ d )
+      end
+    end
+
     it "really complicated conditions" do
       a, b, c, d = TestSwitch.new, TestSwitch.new, TestSwitch.new, TestSwitch.new
 
@@ -186,6 +206,23 @@ describe Trigger do
 
       each_perm(trigger, [a, b, c, d]) do |success, a, b, c, d|
         expect(success).to eq( !(a && !(c || d) || !b) && (a && !(c && d && b) || a) && (!d || !c) )
+      end
+    end
+  end
+
+  describe "Math" do
+    it "set to integer" do
+      a = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
+      b = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
+
+      trigger = _if()[
+        a << 2,
+        b << 4,
+      ]
+
+      each_value(trigger, [a, b]) do |a, b|
+        expect(a).to eq(2)
+        expect(b).to eq(4)
       end
     end
   end
