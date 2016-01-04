@@ -18,6 +18,10 @@ class Counter
     nil
   end
 
+  def implicit
+    false
+  end
+
   def action(vmod, amount)
     raise NotImplementedError
   end
@@ -27,79 +31,56 @@ class Counter
   end
 
   def <<(other)
-    if other.is_a?(Integer)
-      self.min = other
-      self.max = other
-      self.step = 1
-      return action('Set To', other)
+    return action(:setto, other) if other.is_a?(Integer)
+    other = Product.new(other) if other.is_a?(Counter)
+    other = Sum.new(other) if other.is_a?(Product)
+    if other.contains_none?(self)
+      [
+        action(:setto, other.min),
+        other.evaluateInto(self),
+      ]
+    elsif other.contains_self?(self)
+      other.remove_self(self)
+      return [] if other.list.length == 0 && other.constant == 0
+      [
+        action(:add, other.min),
+        other.evaluateInto(self),
+      ]
+    else
+      temp = DC.new(min: min, max: max, step: step, implicit: true)
+      [
+        temp << other,
+        self << temp,
+      ]
     end
-
-    if other.is_a?(Counter)
-      errorCheckObj(other)
-      self.min = other.min
-      self.max = other.max
-      self.step = other.step.abs
-      return test_action("#{self} << #{other}")
-    end
-
-    raise ArgumentError, "Need Integer or Counter"
   end
 
   def +(other)
-    if other.is_a?(Integer)
-      return clone(max: max + other, min: min + other)
-    end
-
-    if other.is_a?(Counter)
-      return test_action("#{self} + #{other}")
-    end
-
-    raise ArgumentError, "Need Integer or Counter"
-  end
-
-  def *(other)
-    if other.is_a?(Integer)
-      bounds = [max * other, min * other]
-      return clone(max: bounds.max, min: bounds.min, step: step * other)
-    end
-
-    if other.is_a?(Counter)
-      bounds = [min * other.min, min * other.max, max * other.min, max * other.max]
-      dc = DC.temp(max: bounds.max, min: bounds.min, step: step * other.step)
-      return dc # todo
-    end
-
-    raise ArgumentError, "Need Integer or Counter"
-  end
-
-  def /(other)
-    errorCheckObj(self, other)
-
-    if other.is_a?(Integer)
-      return clone(
-        max:  (max + other - 1) / other,
-        min:  (min + other - 1) / other,
-        step: (step + other - 1) / other
-      )
-    end
-
-    if other.is_a?(DC) && root === other.root
-      # todo: try to combine dc without using triggers
-    end
-
-    if other.is_a?(Counter)
-      # todo: do this entire section
-    end
-
-    raise ArgumentError, "Need Integer or Counter"
+    Product.new(self) + other
   end
 
   def -(other)
-    self + -other
+    Product.new(self) - other
   end
 
   def -@
-    self * (-1)
+    Product.new(self) * -1
+  end
+
+  def *(other)
+    Product.new(self) * other
+  end
+
+  def /(other)
+    raise NotImplementedError
+  end
+
+  def %(other)
+    raise NotImplementedError
+  end
+
+  def **(other)
+    raise NotImplementedError
   end
 
   def ==(other)
@@ -128,48 +109,52 @@ class Counter
     coef = args.last.is_a?(Integer) ? args.last : 1
     objs = args.last.is_a?(Integer) ? args[0..-2] : args
 
-    if objs.empty? || !objs.all? { |obj| obj.is_a?(DC) }
-      raise ArgumentError, "Countoff requires DC(s) as input (optional multiplier on end)"
+    if objs.empty? || !objs.all? { |obj| obj.is_a?(Counter) }
+      raise ArgumentError, "Countoff requires Counter(s) as input (DC, Resource, Score, etc., optional multiplier on end)"
     end
 
     actions = []
 
     # allocate temp DC
-    if !root.implicit
-      temp = self.class.new(
+    if !implicit
+      temp = DC.new(
         min: 0,
-        max: (root.max - root.min) / root.step,
+        max: (max - min) / step,
         implicit: true
       )
     end
 
     # preliminary
-    actions << objs.map { |obj| obj.add(max - min) } if step > 0 && max != 0
-    actions << temp.set(0) if !root.implicit
-    actions << root.subtract(root.min) if root.min != 0
+    # actions << objs.map { |obj| obj.action(:add, max - min) } if step > 0 && max != 0
+    actions << temp.action(:setto, 0) if !implicit
+    actions << action(:add, -min) if min != 0
 
     # countoff
-    power = nearestPower((root.max - root.min) / root.step)
+    power = nearestPower((max - min) / step)
     each_power(power) do |k|
-      actions << _if( root >= k * root.step )[
-        objs.map { |obj| obj.add(coef * k * step) },
+      actions << _if( self >= k * step )[
+        objs.map { |obj| obj.action(:add, coef * k * step) },
 
-        !root.implicit ?
-          [ root.subtract(k * root * step), temp.add(temp + k) ] :
-          [ root.subtract(k * root.step) ],
+        !implicit ?
+          [ action(:subtract, k * step), temp.action(:add, k) ] :
+          [ action(:subtract, k * step) ],
       ]
     end
 
     # count back
-    actions << temp.countoff(root) if !root.implicit
+    actions << temp.countoff(self) if !implicit
 
     # post
-    actions << root += root.min if !root.implicit && min != 0
-    actions << root << 0 if root.implicit
+    actions << action(:add, min) if !implicit && min != 0
+    actions << action(:setto, 0) if implicit
 
-    freeImplicitObjs(self) if root.implicit
+    freeImplicitObjs(self) if implicit
 
     actions
+  end
+
+  def cost
+    (max - min) / step
   end
 
   protected
@@ -189,7 +174,7 @@ class Counter
 
   def freeImplicitObjs(*objs)
     objs.each do |obj|
-      obj.destroy if obj.is_a?(DC) && obj.root.implicit
+      obj.destroy if obj.is_a?(DC) && obj.implicit
     end
   end
 

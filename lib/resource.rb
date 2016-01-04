@@ -14,10 +14,24 @@ class Resource < Counter
   end
 
   def action(vmod, amount)
+    amount += 2**32 if amount < 0
     setResources(player, vmod, amount, resource)
   end
 
   def clone_defaults
     { player: player, resource: resource }
+  end
+
+  def representation
+    "#{self}"
+  end
+  def to_s
+    if resource == :ore
+      "ore"
+    elsif resource == :gas
+      "gas"
+    else
+      "oreAndGas"
+    end
   end
 end

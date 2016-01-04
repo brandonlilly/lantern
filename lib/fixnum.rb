@@ -12,72 +12,62 @@ class Fixnum
   alias_method :eql, :==
 
   def +(other)
-    return other + self if other.is_a?(Counter)
+    return other + self if other.is_a?(Counter) || other.is_a?(Grouping)
     self.add(other)
   end
 
   def -(other)
-    return -other + self if other.is_a?(Counter)
+    return -other + self if other.is_a?(Counter) || other.is_a?(Grouping)
     self.sub(other)
   end
 
   def *(other)
-    return other * self if other.is_a?(Counter)
+    return other * self if other.is_a?(Counter) || other.is_a?(Grouping)
     self.mult(other)
   end
 
   def /(other)
-    if other.is_a?(Counter)
-      dc = Counter.new;
-      return [
-        dc << self,
-        dc / other,
-      ]
-    end
-
+    raise NotImplementedError if other.is_a?(Counter) || other.is_a?(Grouping)
     self.div(other)
   end
 
   def %(other)
-    if other.is_a?(Counter)
-      dc = Counter.new;
-      return [
-        dc << self,
-        dc % other,
-      ]
-    end
-
+    raise NotImplementedError if other.is_a?(Counter) || other.is_a?(Grouping)
     self.modu(other)
   end
 
   def **(other)
-    raise NotImplementedError if other.is_a?(Counter) # todo
+    raise NotImplementedError if other.is_a?(Counter) || other.is_a?(Grouping)
     self.pow(other)
   end
 
   def ==(other)
-    return other == self if other.is_a?(Counter)
+    return other == self if other.is_a?(Counter) || other.is_a?(Grouping)
     self.eql(other)
   end
 
   def >=(other)
-    return other <= self if other.is_a?(Counter)
+    return other <= self if other.is_a?(Counter) || other.is_a?(Grouping)
     self.gte(other)
   end
 
   def <=(other)
-    return other >= self if other.is_a?(Counter)
+    return other >= self if other.is_a?(Counter) || other.is_a?(Grouping)
     self.lte(other)
   end
 
   def >(other)
-    return other < self if other.is_a?(Counter)
-    self.lt(other)
+    return other < self if other.is_a?(Counter) || other.is_a?(Grouping)
+    self.gt(other)
   end
 
   def <(other)
-    return other > self if other.is_a?(Counter)
-    self.gt(other)
+    return other > self if other.is_a?(Counter) || other.is_a?(Grouping)
+    self.lt(other)
+  end
+
+  def cost
+    0
   end
 
 end

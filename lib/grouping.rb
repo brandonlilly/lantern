@@ -45,11 +45,11 @@ class Grouping
   end
 
   def representation
-    "(" + list.map(&:representation).join(symbol) + ")"
+    "(" + list.map(&:representation).join(symbol.to_s) + ")"
   end
 
   def to_s
-    "(" + [constant].concat(list).join(symbol) + ")"
+    "(" + [constant].concat(list).join(symbol.to_s) + ")"
   end
 
 end
@@ -80,6 +80,25 @@ class Product < Grouping
       raise ArgumentError, "Input needs to be an Integer, Counter, Sum, or Product"
     end
     self
+  end
+
+  def contains?(other)
+    return 1 if list.length == 1 && list.first.representation == other.representation && constant == 1
+    return 2 if list.any? { |elem| elem.representation == other.representation }
+    0
+  end
+  def remove_self(other)
+    list.delete(other)
+    list.length == 0
+  end
+  def min
+    list.reduce(constant) { |acc, el| acc *= el.min * el.step }
+  end
+  def evaluateInto(other)
+    raise NotImplementedError if list.length > 1
+    actions = []
+    list.each { |elem| actions << elem.countoff(other, constant) }
+    actions
   end
 end
 
@@ -129,5 +148,26 @@ class Sum < Grouping
     list << other
     list.sort!
     self
+  end
+
+  def contains_none?(other)
+    list.reduce(0) { |acc, el| acc += el.contains?(other) } == 0
+  end
+  def contains_self?(other)
+    list.reduce(0) { |acc, el| acc += el.contains?(other) } == 1
+  end
+  def remove_self(other)
+    (0...list.length).each do |i|
+      item = list[i]
+      list.delete_at(i) if item.remove_self(other)
+    end
+  end
+  def min
+    list.reduce(constant) { |acc, el| acc += el.min }
+  end
+  def evaluateInto(other)
+    actions = []
+    list.each { |elem| actions << elem.evaluateInto(other) }
+    actions
   end
 end

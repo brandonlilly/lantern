@@ -16,10 +16,12 @@ class DC < Counter
   end
 
   def unit
-    "Terran Marine"
+    # "Terran Marine"
+    "#{self}"
   end
 
   def action(vmod, amount)
+    amount += 2**32 if amount < 0
     setDeaths(player, vmod, amount, unit)
   end
 
@@ -27,6 +29,9 @@ class DC < Counter
     deaths(player, qmod, amount, unit)
   end
 
+  def representation
+    "DC#{id}"
+  end
   def to_s
     "DC#{id}"
   end
