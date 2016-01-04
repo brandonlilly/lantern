@@ -210,4 +210,21 @@ describe Trigger do
     end
   end
 
+  describe "Math" do
+    it "set to integer" do
+      a = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
+      b = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
+
+      trigger = _if()[
+        a << 2,
+        b << 4,
+      ]
+
+      each_value(trigger, [a, b]) do |a, b|
+        expect(a).to eq(2)
+        expect(b).to eq(4)
+      end
+    end
+  end
+
 end
