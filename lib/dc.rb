@@ -20,13 +20,14 @@ class DC < Counter
     "#{self}"
   end
 
-  def action(vmod, amount)
-    amount += 2**32 if amount < 0
-    setDeaths(player, vmod, amount, unit)
+  def condition(qmod, amount)
+    amount += 2**31
+    deaths(player, qmod, amount % 2**32, unit)
   end
 
-  def condition(qmod, amount)
-    deaths(player, qmod, amount, unit)
+  def action(vmod, amount)
+    amount += 2**31 if vmod == :setto
+    setDeaths(player, vmod, amount % 2**32, unit)
   end
 
   def representation
@@ -34,11 +35,5 @@ class DC < Counter
   end
   def to_s
     "DC#{id}"
-  end
-
-  private
-
-  def clone_defaults
-    { id: id, implicit: implicit, store: store }
   end
 end

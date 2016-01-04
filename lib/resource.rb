@@ -10,12 +10,13 @@ class Resource < Counter
   end
 
   def condition(qmod, amount)
-    accumulate(player, qmod, amount, resource)
+    amount += 2**31
+    accumulate(player, qmod, amount % 2**32, resource)
   end
 
   def action(vmod, amount)
-    amount += 2**32 if amount < 0
-    setResources(player, vmod, amount, resource)
+    amount += 2**31 if vmod == :setto
+    setResources(player, vmod, amount % 2**32, resource)
   end
 
   def clone_defaults

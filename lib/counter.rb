@@ -14,6 +14,12 @@ class Counter
     post_initialize(options)
   end
 
+  def modifyBounds(options = {})
+    self.max =  options[:max] || max
+    self.min =  options[:min] || min
+    self.step = options[:step] || step
+  end
+
   def post_initialize(options)
     nil
   end
@@ -31,26 +37,31 @@ class Counter
   end
 
   def <<(other)
-    return action(:setto, other) if other.is_a?(Integer)
+    if other.is_a?(Integer)
+      modifyBounds(min: other, max: other, step: 1)
+      return action(:setto, other)
+    end
     other = Product.new(other) if other.is_a?(Counter)
     other = Sum.new(other) if other.is_a?(Product)
     if other.contains_none?(self)
+      modifyBounds(min: other.min, max: other.max, step: other.step)
       [
-        action(:setto, other.min),
+        action(:setto, other.offset),
         other.evaluateInto(self),
       ]
     elsif other.contains_self?(self)
       other.remove_self(self)
       return [] if other.list.length == 0 && other.constant == 0
       [
-        action(:add, other.min),
+        action(:add, other.offset),
         other.evaluateInto(self),
       ]
     else
       temp = DC.new(min: min, max: max, step: step, implicit: true)
       [
         temp << other,
-        self << temp,
+        action(:setto, temp.min),
+        temp.countoff(self),
       ]
     end
   end
@@ -84,22 +95,31 @@ class Counter
   end
 
   def ==(other)
+    return condition(:exactly, other) if other.is_a?(Integer)
     test_cond("#{self} == #{other}") # todo
   end
 
+  def !=(other)
+    test_cond("#{self} != #{other}") # todo
+  end
+
   def >(other)
+    return condition(:atleast, other+1) if other.is_a?(Integer)
     test_cond("#{self} > #{other}") # todo
   end
 
   def <(other)
+    return condition(:atmost, other-1) if other.is_a?(Integer)
     test_cond("#{self} < #{other}") # todo
   end
 
   def >=(other)
+    return condition(:atleast, other) if other.is_a?(Integer)
     test_cond("#{self} >= #{other}") # todo
   end
 
   def <=(other)
+    return condition(:atmost, other) if other.is_a?(Integer)
     test_cond("#{self} <= #{other}") # todo
   end
 
@@ -127,27 +147,25 @@ class Counter
     # preliminary
     # actions << objs.map { |obj| obj.action(:add, max - min) } if step > 0 && max != 0
     actions << temp.action(:setto, 0) if !implicit
-    actions << action(:add, -min) if min != 0
 
     # countoff
     power = nearestPower((max - min) / step)
     each_power(power) do |k|
-      actions << _if( self >= k * step )[
+      actions << _if( self >= k * step + min )[
         objs.map { |obj| obj.action(:add, coef * k * step) },
 
         !implicit ?
-          [ action(:subtract, k * step), temp.action(:add, k) ] :
-          [ action(:subtract, k * step) ],
+          [ action(:add, -k * step), temp.action(:add, k) ] :
+          [ action(:add, -k * step) ],
       ]
     end
 
     # count back
-    actions << temp.countoff(self) if !implicit
+    # actions << temp.countoff(self, self.step) if !implicit
+    actions << temp.countoff(self, step) if !implicit
 
     # post
-    actions << action(:add, min) if !implicit && min != 0
-    actions << action(:setto, 0) if implicit
-
+    actions << action(:setto, 2**31) if implicit
     freeImplicitObjs(self) if implicit
 
     actions
@@ -158,19 +176,6 @@ class Counter
   end
 
   protected
-
-  def clone(options = {})
-    defaults = { max: max, min: min, step: step }
-    self.class.new(
-      defaults
-        .merge(clone_defaults)
-        .merge(options)
-    )
-  end
-
-  def clone_defaults
-    {}
-  end
 
   def freeImplicitObjs(*objs)
     objs.each do |obj|

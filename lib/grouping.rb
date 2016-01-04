@@ -91,14 +91,35 @@ class Product < Grouping
     list.delete(other)
     list.length == 0
   end
-  def min
-    list.reduce(constant) { |acc, el| acc *= el.min * el.step }
-  end
+
   def evaluateInto(other)
     raise NotImplementedError if list.length > 1
     actions = []
     list.each { |elem| actions << elem.countoff(other, constant) }
     actions
+  end
+
+  def offset
+    list.reduce(constant) { |acc, el| acc *= el.min }
+  end
+  def minAndMax
+    minval = constant
+    maxval = constant
+    list.each do |elem|
+      arr = [minval * elem.min, minval * elem.max, maxval * elem.min, maxval * elem.max]
+      minval = arr.min
+      maxval = arr.max
+    end
+    {min: minval, max: maxval}
+  end
+  def min
+    minAndMax[:min]
+  end
+  def max
+    minAndMax[:max]
+  end
+  def step
+    list.reduce(constant) { |acc, el| acc *= el.step }.abs
   end
 end
 
@@ -162,12 +183,25 @@ class Sum < Grouping
       list.delete_at(i) if item.remove_self(other)
     end
   end
-  def min
-    list.reduce(constant) { |acc, el| acc += el.min }
-  end
+
   def evaluateInto(other)
     actions = []
     list.each { |elem| actions << elem.evaluateInto(other) }
     actions
+  end
+
+  def offset
+    list.reduce(constant) { |acc, el| acc += el.offset }
+  end
+  def min
+    list.reduce(constant) { |acc, el| acc += el.min }
+  end
+  def max
+    list.reduce(constant) { |acc, el| acc += el.max }
+  end
+  def step
+    return 1 if list.length == 0
+    return list.first.step if list.length == 1
+    list.map(&:step).gcd
   end
 end
