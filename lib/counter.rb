@@ -1,5 +1,6 @@
 require_relative 'actions'
 require_relative 'conditions'
+require_relative 'grouping'
 
 class Counter
   include AndOr
@@ -27,6 +28,10 @@ class Counter
   end
 
   def condition(qmod, amount)
+    raise NotImplementedError
+  end
+
+  def representation
     raise NotImplementedError
   end
 

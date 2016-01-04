@@ -32,6 +32,7 @@ class DC < Counter
   def representation
     "DC#{id}"
   end
+
   def to_s
     "DC#{id}"
   end
