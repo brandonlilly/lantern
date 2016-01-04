@@ -55,5 +55,5 @@ def format_resource_type(value)
   return "gas" if ['gas', 'vespene', 'vespene gas', 'vespenegas'].include?(str)
   return "ore and gas" if ["ore and gas", "oreandgas", "both"].include?(str)
 
-  type
+  value
 end
