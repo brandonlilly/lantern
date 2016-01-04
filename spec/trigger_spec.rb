@@ -183,6 +183,58 @@ describe Trigger do
       end
     end
 
+    it "a & !b" do
+      a, b = TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( a & !b )[
+        success
+      ]
+
+      each_perm(trigger, [a, b]) do |success, a, b|
+        expect(success).to eq( a && !b ), "Got #{success}, expected #{!success}: a:#{a} b:#{b}"
+      end
+    end
+
+    it "a & b & !c" do
+      a, b, c = TestSwitch.new, TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( a & b & !c )[
+        success
+      ]
+
+      each_perm(trigger, [a, b, c]) do |success, a, b, c|
+        expect(success).to eq( a && b && !c ), "Got #{success}, expected #{!success}: a:#{a} b:#{b} c:#{c}"
+      end
+    end
+
+    it "a | !b" do
+      a, b = TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( a | !b )[
+        success
+      ]
+
+      each_perm(trigger, [a, b]) do |success, a, b|
+        expect(success).to eq( a || !b ), "Got #{success}, expected #{!success}: a:#{a} b:#{b}"
+      end
+    end
+
+    it "!a | !b" do
+      a, b = TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( !a | !b )[
+        success
+      ]
+
+      each_perm(trigger, [a, b]) do |success, a, b|
+        expect(success).to eq( !a || !b ), "Got #{success}, expected #{!success}: a:#{a} b:#{b}"
+      end
+    end
+
     it "really complicated conditions" do
       a, b, c, d = TestSwitch.new, TestSwitch.new, TestSwitch.new, TestSwitch.new
 

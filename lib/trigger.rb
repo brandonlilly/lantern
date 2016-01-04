@@ -84,17 +84,20 @@ class Trigger
           current_trig = Trigger.new(conditions: [cond.set?], players: players)
         else
           cond = Switch.temp
+          temp = Switch.temp
           cond_switches << cond
+          cond_switches << temp
 
           block_actions = condition.action_block.call(cond)
           current_trig.actions << [
             cond << false,
+            temp << true,
             block_actions,
           ]
           trigs.concat(current_trig.unfold)
           current_trig = Trigger.new(
             players: players,
-            conditions: [cond.clear?]
+            conditions: [cond.clear?, temp.set?]
           )
         end
       end
@@ -111,7 +114,7 @@ class Trigger
         trigs << current_trig
         trigger = action
         trigger.players = players
-        trigger.conditions << (temp.set?)
+        trigger.conditions.unshift(temp.set?)
         trigs.concat(trigger.unfold)
         current_trig = Trigger.new(conditions: [temp.set?], actions: [temp.clear], players: players)
         temp.destroy
