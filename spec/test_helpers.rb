@@ -38,7 +38,66 @@ def each_perm(trigger, vars, &test_block)
       if run
         trigger.actions.each do |action|
           if action.type?('Set Switch')
-            switches[action.params[:gs]] = action.params[:n] == "set"
+            id = action.params[:gs]
+            switches[id] = case action.params[:n]
+            when 'toggle'
+              !switches[id]
+            when 'set'
+              true
+            when 'clear'
+              false
+            end
+          end
+          if action.type?('Success')
+            success = true
+          end
+        end
+      end
+
+    end
+
+    test_block.call(success, *vars.map(&:value))
+  end
+end
+
+def each_value(trigger, vars, &test_block)
+  unfolded_trigs = trigger.unfold
+
+  (2 ** vars.size).times do |n|
+    vars.each_with_index do |var, i|
+      var.value = n.to_s(2).reverse.ljust(vars.size, '0')[i] == '1'
+    end
+
+    switches = Array.new(256, false)
+    switches = Array.new(256, false)
+    success = false
+
+    unfolded_trigs.each do |trigger|
+      run = trigger.conditions.all? do |condition|
+        if condition.type?('Switch')
+          next switches[condition.params[:r]] == (condition.params[:m] == "is set")
+        end
+
+        if condition.type?('Test')
+          var = vars.find { |var| var.id == condition.params[:r] }
+          next condition.params[:m] == var.value
+        end
+
+        raise "Unexpected condition type: #{condition.type}"
+      end
+
+      if run
+        trigger.actions.each do |action|
+          if action.type?('Set Switch')
+            id = action.params[:gs]
+            switches[id] = case action.params[:n]
+            when 'toggle'
+              !switches[id]
+            when 'set'
+              true
+            when 'clear'
+              false
+            end
           end
           if action.type?('Success')
             success = true
@@ -91,5 +150,18 @@ class TestSwitch
     self.class.new(
       id: options[:id] || id
     )
+  end
+end
+
+class TestCounter < Counter
+  def condition(qmod, amount)
+    Condition.new(
+      c: 'Test Counter',
+      r: id
+    )
+  end
+
+  def action(vmod, amount)
+
   end
 end

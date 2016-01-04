@@ -163,6 +163,26 @@ describe Trigger do
       end
     end
 
+    it "custom conditional" do
+      def xor(cond1, cond2)
+        conditional {|cond| [
+          _if(cond1)[cond.toggle],
+          _if(cond2)[cond.toggle],
+        ]}
+      end
+
+      a, b, c, d = TestSwitch.new, TestSwitch.new, TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( xor(a, b) | xor(c, d) )[
+        success()
+      ]
+
+      each_perm(trigger, [a, b, c, d]) do |success, a, b, c, d|
+        expect(success).to eq( a ^ b || c ^ d )
+      end
+    end
+
     it "really complicated conditions" do
       a, b, c, d = TestSwitch.new, TestSwitch.new, TestSwitch.new, TestSwitch.new
 
