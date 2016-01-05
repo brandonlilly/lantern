@@ -10,6 +10,7 @@ class Fixnum
   alias_method :lt,  :<
   alias_method :gt,  :>
   alias_method :eql, :==
+  alias_method :neq, :!=
 
   def +(other)
     return other + self if other.is_a?(Counter) || other.is_a?(Grouping)
@@ -44,6 +45,11 @@ class Fixnum
   def ==(other)
     return other == self if other.is_a?(Counter) || other.is_a?(Grouping)
     self.eql(other)
+  end
+
+  def !=(other)
+    return other != self if other.is_a?(Counter) || other.is_a?(Grouping)
+    self.neq(other)
   end
 
   def >=(other)
