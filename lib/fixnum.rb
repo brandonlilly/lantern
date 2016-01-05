@@ -66,6 +66,14 @@ class Fixnum
     self.lt(other)
   end
 
+  def min
+    self
+  end
+
+  def max
+    self
+  end
+
   def cost
     0
   end

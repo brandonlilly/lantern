@@ -100,33 +100,87 @@ class Counter
   end
 
   def ==(other)
+    return never() if min > other.max || max < other.min
     return condition(:exactly, other) if other.is_a?(Integer)
-    test_cond("#{self} == #{other}") # todo
+    return other == self if lower_cost?(other)
+    compare(other, :==)
   end
 
   def !=(other)
-    test_cond("#{self} != #{other}") # todo
+    return [] if min > other.max || max < other.min
+    return !(other == self) if lower_cost?(other)
+    !(self == other)
   end
 
   def >(other)
+    return [] if min > other.max
+    return never() if max <= other.min
     return condition(:atleast, other+1) if other.is_a?(Integer)
-    test_cond("#{self} > #{other}") # todo
+    return other <= self if lower_cost?(other)
+    compare(other, :>)
   end
 
   def <(other)
+    return [] if min < other.max
+    return never() if max >= other.min
     return condition(:atmost, other-1) if other.is_a?(Integer)
-    test_cond("#{self} < #{other}") # todo
+    return other >= self if lower_cost?(other)
+    compare(other, :<)
   end
 
   def >=(other)
+    return [] if min >= other.max
+    return never() if max < other.min
     return condition(:atleast, other) if other.is_a?(Integer)
-    test_cond("#{self} >= #{other}") # todo
+    return other < self if lower_cost?(other)
+    compare(other, :>=)
   end
 
   def <=(other)
+    return [] if min <= other.max
+    return never() if max > other.min
     return condition(:atmost, other) if other.is_a?(Integer)
-    test_cond("#{self} <= #{other}") # todo
+    return other > self if lower_cost?(other)
+    compare(other, :<=)
   end
+
+  def lower_cost?(other)
+    [cost, (max - other.min + step - 1) / step].min > [other.cost, (other.max - min + other.step - 1) / other.step].min
+  end
+
+  def compare(other, symbol)
+    cost <= (max { |a, b|  } - other.min + step - 1) / step ?
+      [range = cost, minval = min] :
+      [range = (max - other.min + step - 1) / step, minval = other.min - (other.min - max) % step]
+    power = nearestPower(range)
+
+   conditional do |cond|
+     temp = DC.new(min: 0, max: range, implicit: true)
+     actions = []
+
+     actions << temp.action(:setto, 0)
+     each_power(power) do |k|
+       actions << _if( self >= k * step + minval )[
+         other << other - k * step,
+         self << self - k * step,
+         temp << temp + k,
+       ]
+     end
+     actions << _if( other.send(symbol, minval) ) [ cond << true ]
+     each_power(power) do |k| #TODO replace with countoff?
+       actions << _if( temp >= k )[
+         other << other + k * step,
+         self << self + k * step,
+         temp << temp - k,
+       ]
+     end
+     actions << temp.action(:setto, 2**31)
+
+     freeImplicitObjs(temp)
+
+     actions
+   end
+ end
 
   # countoff
   def countoff(*args)
@@ -157,11 +211,11 @@ class Counter
     power = nearestPower((max - min) / step)
     each_power(power) do |k|
       actions << _if( self >= k * step + min )[
-        objs.map { |obj| obj.action(:add, coef * k * step) },
+        objs.map { |obj| obj << obj + coef * k * step },
 
         !implicit ?
-          [ action(:add, -k * step), temp.action(:add, k) ] :
-          [ action(:add, -k * step) ],
+          [ self << self - k * step, temp << temp + k ] :
+          [ self << self - k * step ],
       ]
     end
 
