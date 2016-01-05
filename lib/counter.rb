@@ -41,6 +41,19 @@ class Counter
     raise NotImplementedError
   end
 
+  def add(amount)
+    action(:add, amount)
+  end
+
+  def subtract(amount)
+    action(:subtract, amount)
+  end
+
+  def setTo(amount)
+    adjusted = (amount + 2**31) % 2**32
+    action(:setto, adjusted)
+  end
+
   def <<(other)
     if other.is_a?(Integer)
       modifyBounds(min: other, max: other, step: 1)
@@ -249,6 +262,8 @@ class Counter
   end
 
   def each_power(power, &block)
+    return to_enum(:each_power, power) unless block_given?
+
     k = power
     while k >= 1
       block.call(k)
