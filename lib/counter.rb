@@ -72,34 +72,42 @@ class Counter
   end
 
   def +(other)
+    return min + other if cost == 0
     Product.new(self) + other
   end
 
   def -(other)
+    return min - other if cost == 0
     Product.new(self) - other
   end
 
   def -@
+    return -min if cost == 0
     Product.new(self) * -1
   end
 
   def *(other)
+    return min * other if cost == 0
     Product.new(self) * other
   end
 
   def /(other)
+    return min / other if cost == 0
     raise NotImplementedError
   end
 
   def %(other)
+    return min % other if cost == 0
     raise NotImplementedError
   end
 
   def **(other)
+    return min ** other if cost == 0
     raise NotImplementedError
   end
 
   def ==(other)
+    return min == other if cost == 0
     return never() if min > other.max || max < other.min
     return condition(:exactly, other) if other.is_a?(Integer)
     return other == self if lower_cost?(other)
@@ -107,40 +115,45 @@ class Counter
   end
 
   def !=(other)
+    return min != other if cost == 0
     return [] if min > other.max || max < other.min
     return !(other == self) if lower_cost?(other)
     !(self == other)
   end
 
   def >(other)
+    return min > other if cost == 0
     return [] if min > other.max
     return never() if max <= other.min
     return condition(:atleast, other+1) if other.is_a?(Integer)
-    return other <= self if lower_cost?(other)
+    return other < self if lower_cost?(other)
     compare(other, :>)
   end
 
   def <(other)
+    return min < other if cost == 0
     return [] if min < other.max
     return never() if max >= other.min
     return condition(:atmost, other-1) if other.is_a?(Integer)
-    return other >= self if lower_cost?(other)
+    return other > self if lower_cost?(other)
     compare(other, :<)
   end
 
   def >=(other)
+    return min >= other if cost == 0
     return [] if min >= other.max
     return never() if max < other.min
     return condition(:atleast, other) if other.is_a?(Integer)
-    return other < self if lower_cost?(other)
+    return other <= self if lower_cost?(other)
     compare(other, :>=)
   end
 
   def <=(other)
+    return min <= other if cost == 0
     return [] if min <= other.max
     return never() if max > other.min
     return condition(:atmost, other) if other.is_a?(Integer)
-    return other > self if lower_cost?(other)
+    return other >= self if lower_cost?(other)
     compare(other, :<=)
   end
 
@@ -149,9 +162,8 @@ class Counter
   end
 
   def compare(other, symbol)
-    cost <= (max { |a, b|  } - other.min + step - 1) / step ?
-      [range = cost, minval = min] :
-      [range = (max - other.min + step - 1) / step, minval = other.min - (other.min - max) % step]
+    cost < (max - other.min + step - 1) / step ? minval = min : minval = other.min + (max - other.min) % step
+    range = (max - minval) / step
     power = nearestPower(range)
 
    conditional do |cond|

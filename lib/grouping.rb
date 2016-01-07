@@ -87,6 +87,7 @@ class Product < Grouping
     return 2 if list.any? { |elem| elem.representation == other.representation }
     0
   end
+
   def remove_self(other)
     list.delete(other)
     list.length == 0
@@ -102,6 +103,7 @@ class Product < Grouping
   def offset
     list.reduce(constant) { |acc, el| acc *= el.min }
   end
+
   def minAndMax
     minval = constant
     maxval = constant
@@ -112,12 +114,15 @@ class Product < Grouping
     end
     {min: minval, max: maxval}
   end
+
   def min
     minAndMax[:min]
   end
+
   def max
     minAndMax[:max]
   end
+
   def step
     list.reduce(constant) { |acc, el| acc *= el.step }.abs
   end
@@ -174,9 +179,11 @@ class Sum < Grouping
   def contains_none?(other)
     list.reduce(0) { |acc, el| acc += el.contains?(other) } == 0
   end
+
   def contains_self?(other)
     list.reduce(0) { |acc, el| acc += el.contains?(other) } == 1
   end
+
   def remove_self(other)
     (0...list.length).each do |i|
       item = list[i]
@@ -193,12 +200,15 @@ class Sum < Grouping
   def offset
     list.reduce(constant) { |acc, el| acc += el.offset }
   end
+
   def min
     list.reduce(constant) { |acc, el| acc += el.min }
   end
+
   def max
     list.reduce(constant) { |acc, el| acc += el.max }
   end
+
   def step
     return 1 if list.length == 0
     return list.first.step if list.length == 1
