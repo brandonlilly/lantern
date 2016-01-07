@@ -118,6 +118,25 @@ describe Trigger do
       end
     end
 
+    it "double nesting" do
+      a = TestSwitch.new
+      b = TestSwitch.new
+      c = TestSwitch.new
+
+      trigger =
+      _if( a )[
+        _if( b )[
+          _if( c ) [
+            success
+          ]
+        ]
+      ]
+
+      each_perm(trigger, [a, b, c]) do |success, a, b, c|
+        expect(success).to eq( a && b && c)
+      end
+    end
+
     it "nested conditionals" do
       a = TestSwitch.new
       b = TestSwitch.new
@@ -416,7 +435,7 @@ describe Trigger do
       end
     end
 
-    it "x < 5" do
+    xit "x < 5" do
       x = TestCounter.new(min: 0, max: 7, range: (0..7))
 
       trigger =
@@ -425,7 +444,7 @@ describe Trigger do
       ]
 
       each_value(trigger, [x]) do |x, x0|
-        expect(x0 < 5).to eq(x == 100)
+        expect(x0 < 5).to eq(x == 100), "Expected #{x0 < 5}, got: #{x == 100}. x: #{x}, x0: #{x0}."
       end
     end
 

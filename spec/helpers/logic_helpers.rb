@@ -17,7 +17,7 @@ def each_perm(trigger, vars, &test_block)
     vars.each_with_index do |var, i|
       var.value = n.to_s(2).reverse.ljust(vars.size, '0')[i] == '1'
     end
-    
+
     switches = Array.new(256, false)
     success = false
 
