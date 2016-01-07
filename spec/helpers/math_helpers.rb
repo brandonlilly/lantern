@@ -1,83 +1,22 @@
-require_relative '../lib/conditions'
-require_relative '../lib/actions'
-require_relative '../lib/trigger'
-require_relative '../lib/and_or'
-
-def success
-  Action.new(
-    c: 'Success',
-    n: true
-  )
-end
-
-def each_perm(trigger, vars, &test_block)
-  unfolded_trigs = trigger.unfold
-
-  (2 ** vars.size).times do |n|
-    vars.each_with_index do |var, i|
-      var.value = n.to_s(2).reverse.ljust(vars.size, '0')[i] == '1'
-    end
-
-    switches = Array.new(256, false)
-    success = false
-
-    unfolded_trigs.each do |trigger|
-      run = trigger.conditions.all? do |condition|
-        if condition.type?('Switch')
-          next switches[condition.params[:r]] == (condition.params[:m] == "is set")
-        end
-
-        if condition.type?('Test')
-          var = vars.find { |var| var.id == condition.params[:r] }
-          next condition.params[:m] == var.value
-        end
-
-        raise "Unexpected condition type: #{condition.type}"
-      end
-
-      if run
-        trigger.actions.each do |action|
-          if action.type?('Set Switch')
-            id = action.params[:gs]
-            switches[id] = case action.params[:n]
-            when 'toggle'
-              !switches[id]
-            when 'set'
-              true
-            when 'clear'
-              false
-            end
-          end
-          if action.type?('Success')
-            success = true
-          end
-        end
-      end
-
-    end
-
-    test_block.call(success, *vars.map(&:value))
-  end
-end
-
-def trigger_passes?(trigger, switch_values, dc_values)
-  trigger.conditions.all? do |condition|
-    true
-  end
-end
+require_relative '../../lib/conditions'
+require_relative '../../lib/actions'
+require_relative '../../lib/trigger'
+require_relative '../../lib/and_or'
 
 def each_value(trigger, vars, &test_block)
-  unfolded_trigs = trigger.unfold
+  unfolded_trigs = trigger.unfold.reject(&:superfluous?)
 
   ranges = vars.map(&:range)
-  permutations = ranges.map(&:to_a).inject(&:product).map(&:flatten)
+  permutations = ranges.size > 1 ?
+    ranges.map(&:to_a).inject(&:product).map(&:flatten) :
+    ranges[0].map {|val| [val]}
+
   permutations.each do |permutation|
     switches = Array.new(256, false)
     dc_values = Hash.new{|h,k| h[k] = Hash.new(0) }
-    test_values = Hash.new
 
     permutation.each_with_index do |value, i|
-      vars[i].value = value
+      vars[i].value = value + 2**31
     end
 
     unfolded_trigs.each do |trigger|
@@ -117,11 +56,6 @@ def each_value(trigger, vars, &test_block)
           end)
         end
 
-        if condition.type?('Test')
-          # Todo
-          next true
-        end
-
         raise "Unexpected condition type: #{condition.type}"
       end
 
@@ -152,6 +86,8 @@ def each_value(trigger, vars, &test_block)
             when 'Subtract'
               dc_values[player][unit] -= n
             end
+
+            dc_values[player][unit] %= 2**32
           end
 
           if action.type?('Test Counter')
@@ -167,55 +103,17 @@ def each_value(trigger, vars, &test_block)
             when 'Subtract'
               var.value -= n
             end
+
+            var.value %= 2**32
           end
         end
       end
 
     end
 
-    test_block.call(*vars.map(&:value))
-  end
-end
 
-class TestSwitch
-  include AndOr
-
-  @@index = 0
-
-  attr_accessor :value, :id, :inverted
-
-  def initialize(options = {})
-    @id = options[:id] || allocateId
-  end
-
-  def allocateId
-    @@index += 1
-  end
-
-  def set?
-    Condition.new(
-      c: 'Test',
-      r: id,
-      m: true
-    )
-  end
-
-  def clear?
-    Condition.new(
-      c: 'Test',
-      r: id,
-      m: false
-    )
-  end
-
-  def to_cond
-    set?
-  end
-
-  def clone(options = {})
-    self.class.new(
-      id: options[:id] || id
-    )
+    values = vars.map {|var| var.value - 2**31}
+    test_block.call(*values, *permutation)
   end
 end
 
@@ -235,23 +133,26 @@ class TestCounter < Counter
   end
 
   def condition(qmod, amount)
+    amount += 2**31
+
     Condition.new(
       c: 'Test Counter',
       r: id,
       m: format_qmod(qmod),
-      n: n
+      n: (amount) % 2**32
     )
   end
 
   def action(vmod, amount)
+    amount += 2**31 if vmod == :setto
+
     Action.new(
       c: 'Test Counter',
       n:  format_vmod(vmod),
-      gs: amount,
+      gs: (amount) % 2**32,
       t:  id
     )
   end
-
 
   def representation
     "TestCounter#{id}"

@@ -1,5 +1,6 @@
 require_relative '../lib/trigger'
-require_relative 'test_helpers'
+require_relative 'helpers/logic_helpers'
+require_relative 'helpers/math_helpers'
 
 describe Trigger do
 
@@ -117,6 +118,25 @@ describe Trigger do
       end
     end
 
+    it "double nesting" do
+      a = TestSwitch.new
+      b = TestSwitch.new
+      c = TestSwitch.new
+
+      trigger =
+      _if( a )[
+        _if( b )[
+          _if( c ) [
+            success
+          ]
+        ]
+      ]
+
+      each_perm(trigger, [a, b, c]) do |success, a, b, c|
+        expect(success).to eq( a && b && c)
+      end
+    end
+
     it "nested conditionals" do
       a = TestSwitch.new
       b = TestSwitch.new
@@ -183,6 +203,58 @@ describe Trigger do
       end
     end
 
+    it "a & !b" do
+      a, b = TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( a & !b )[
+        success
+      ]
+
+      each_perm(trigger, [a, b]) do |success, a, b|
+        expect(success).to eq( a && !b ), "Got #{success}, expected #{!success}: a:#{a} b:#{b}"
+      end
+    end
+
+    it "a & b & !c" do
+      a, b, c = TestSwitch.new, TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( a & b & !c )[
+        success
+      ]
+
+      each_perm(trigger, [a, b, c]) do |success, a, b, c|
+        expect(success).to eq( a && b && !c ), "Got #{success}, expected #{!success}: a:#{a} b:#{b} c:#{c}"
+      end
+    end
+
+    it "a | !b" do
+      a, b = TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( a | !b )[
+        success
+      ]
+
+      each_perm(trigger, [a, b]) do |success, a, b|
+        expect(success).to eq( a || !b ), "Got #{success}, expected #{!success}: a:#{a} b:#{b}"
+      end
+    end
+
+    it "!a | !b" do
+      a, b = TestSwitch.new, TestSwitch.new
+
+      trigger =
+      _if( !a | !b )[
+        success
+      ]
+
+      each_perm(trigger, [a, b]) do |success, a, b|
+        expect(success).to eq( !a || !b ), "Got #{success}, expected #{!success}: a:#{a} b:#{b}"
+      end
+    end
+
     it "really complicated conditions" do
       a, b, c, d = TestSwitch.new, TestSwitch.new, TestSwitch.new, TestSwitch.new
 
@@ -211,7 +283,7 @@ describe Trigger do
   end
 
   describe "Math" do
-    it "set to integer" do
+    it "x << C" do
       a = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
       b = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
 
@@ -223,6 +295,170 @@ describe Trigger do
       each_value(trigger, [a, b]) do |a, b|
         expect(a).to eq(2)
         expect(b).to eq(4)
+      end
+    end
+
+    it "x << x" do
+      a = TestCounter.new(min: 0, max: 10, range: [0, 1, 2, 3])
+
+      trigger = _if()[
+        a << a,
+      ]
+
+      each_value(trigger, [a]) do |a, a0|
+        expect(a).to eq(a0)
+      end
+    end
+
+    it "x << -x" do
+      a = TestCounter.new(min: 0, max: 10, range: [0, 1, 2, 3])
+
+      trigger = _if()[
+        a << -a,
+      ]
+
+      each_value(trigger, [a]) do |a, a0|
+        expect(a).to eq(-a0)
+      end
+    end
+
+    it "x << x + C" do
+      a = TestCounter.new(min: 0, max: 15, range: [1, 2, 3])
+
+      trigger = _if()[
+        a << a - 1,
+      ]
+
+      each_value(trigger, [a]) do |a, a0|
+        expect(a).to eq(a0 - 1)
+      end
+
+      trigger = _if()[
+        a << 10,
+        a << a + 5,
+      ]
+
+      each_value(trigger, [a]) do |a|
+        expect(a).to eq(15)
+      end
+    end
+
+    it "x << y" do
+      a = TestCounter.new(min: 0, max: 3, range: [2])
+      b = TestCounter.new(min: 0, max: 10, range: [1, 5, 10])
+
+      trigger = _if()[
+        a << b,
+      ]
+
+      each_value(trigger, [a, b]) do |a, b|
+        expect(a).to eq(b)
+      end
+    end
+
+    it "x << y + C" do
+      a = TestCounter.new(min: 0, max: 3, range: [0, 1, 2])
+      b = TestCounter.new(min: 0, max: 10, range: [4, 5, 6])
+
+      trigger = _if()[
+        a << b + 2,
+      ]
+
+      each_value(trigger, [a, b]) do |a, b|
+        expect(a).to eq(b + 2)
+      end
+    end
+
+    it "x << 2 * y" do
+      a = TestCounter.new(min: 0, max: 3, range: [0, 1, 2])
+      b = TestCounter.new(min: 0, max: 10, range: [4, 5, 6])
+
+      trigger = _if()[
+        a << 2 * b,
+      ]
+
+      each_value(trigger, [a, b]) do |a, b|
+        expect(a).to eq(2 * b)
+      end
+    end
+
+    it "x << 3 * y + 10" do
+      a = TestCounter.new(min: 0, max: 3, range: [0, 1, 2])
+      b = TestCounter.new(min: 0, max: 10, range: [4, 5, 6])
+
+      trigger = _if()[
+        a << 3 * b + 10,
+      ]
+
+      each_value(trigger, [a, b]) do |a, b|
+        expect(a).to eq(3 * b + 10)
+      end
+    end
+
+    it "x << 50 - 5 * y" do
+      x = TestCounter.new(min: 0, max: 7, range: [0, 1, 2, 3, 4])
+      y = TestCounter.new(min: 0, max: 7, range: [0, 1, 2, 3, 4])
+
+      trigger = _if()[
+        x << 50 - 5 * y,
+      ]
+
+      each_value(trigger, [x, y]) do |x, y|
+        expect(x).to eq(50 - 5 * y)
+      end
+    end
+
+    it "x << -50 * (1 - y) + y" do
+      x = TestCounter.new(min: 0, max: 7, range: [0, 1, 2, 3, 4])
+      y = TestCounter.new(min: 0, max: 7, range: [0, 1, 2, 3, 4])
+
+      trigger = _if()[
+        x << -50 * (1 - y) + y,
+      ]
+
+      each_value(trigger, [x, y]) do |x, y|
+        expect(x).to eq(-50 * (1 - y) + y)
+      end
+    end
+
+    xit "x << y * z" do
+      x = TestCounter.new(min: 0, max: 3, range: [1])
+      y = TestCounter.new(min: 0, max: 10, range: [1, 2, 3, 4, 5])
+      z = TestCounter.new(min: 0, max: 10, range: [1, 2, 3, 4, 5])
+
+      trigger = _if()[
+        x << y * z,
+      ]
+
+      each_value(trigger, [x, y, z]) do |x, y, z|
+        expect(x).to eq(y * z)
+      end
+    end
+
+    xit "x < 5" do
+      x = TestCounter.new(min: 0, max: 7, range: (0..7))
+
+      trigger =
+      _if( x < 5 )[
+        x << 100,
+      ]
+
+      each_value(trigger, [x]) do |x, x0|
+        expect(x0 < 5).to eq(x == 100), "Expected #{x0 < 5}, got: #{x == 100}. x: #{x}, x0: #{x0}."
+      end
+    end
+
+    xit "x < y + 5" do
+      x = TestCounter.new(min: 0, max: 7, range: [1, 2, 3, 4])
+      y = TestCounter.new(min: 0, max: 7, range: [1, 2, 3, 4])
+
+      trigger =
+      _if( x < y + 5 )[
+        x << 100,
+      ]
+
+      each_value(trigger, [x, y]) do |x, y, x0, y0|
+        expect(x0 < y0 + 5).to eq(x == 100)
       end
     end
   end

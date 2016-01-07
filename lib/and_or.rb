@@ -28,8 +28,8 @@ class ConditionList < Array
       return self + other
     end
 
-    if other.is_a?(Condition) || other.class.method_defined?(:to_cond)
-      return self << other
+    if other.is_a?(Condition) || other.is_a?(Conditional) || other.class.method_defined?(:to_cond)
+      return self.concat([other])
     end
 
     raise ArgumentError, "Expecting ConditionList or Condition: #{other}"
