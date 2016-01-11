@@ -8,8 +8,8 @@ describe Switch do
 
   describe "#initialize" do
     it "allocates an unused id" do
-      first = Switch.temp(store: @store)
-      second = Switch.temp(store: @store)
+      first = Switch.new(store: @store)
+      second = Switch.new(store: @store)
 
       expect(first.id).to eq(0)
       expect(second.id).to eq(1)
@@ -17,32 +17,27 @@ describe Switch do
   end
 
   describe "#destroy" do
-    it "deallocates the id" do
-      first = Switch.temp(store: @store)
-      second = Switch.temp(store: @store)
+    it "retains the id" do
+      first = Switch.new(store: @store)
+      second = Switch.new(store: @store)
       first.destroy
-      third = Switch.temp(store: @store)
+      third = Switch.new(store: @store)
 
+      expect(first.id).to eq(0)
       expect(second.id).to eq(1)
-      expect(third.id).to eq(0)
-    end
-
-    it "sets its id to nil" do
-      switch = Switch.temp(store: @store)
-      switch.destroy
-      expect(switch.id).to eq(nil)
+      expect(third.id).to eq(2)
     end
   end
 
   describe "#clone" do
-    it "creates a temp object" do
-      switch = Switch.temp(store: @store)
+    it "creates a new object" do
+      switch = Switch.new(store: @store)
       clone = switch.clone
       expect(switch.object_id).to_not eq(clone.object_id)
     end
 
     it "has same attribute values" do
-      switch = Switch.temp(store: @store, inverted: true, id: 27)
+      switch = Switch.new(store: @store, inverted: true, id: 27)
       clone = switch.clone
 
       switch.instance_variables.each do |variable|
@@ -53,7 +48,7 @@ describe Switch do
     end
 
     it "can specify different values" do
-      switch = Switch.temp(store: @store, inverted: true, id: 30)
+      switch = Switch.new(store: @store, inverted: true, id: 30)
       clone = switch.clone(inverted: false)
 
       expect(clone.inverted).to eq(false)

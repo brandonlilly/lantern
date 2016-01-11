@@ -40,7 +40,7 @@ describe Trigger do
     end
   end
 
-  describe "condition logic" do
+  xdescribe "condition logic" do
     before do
       @a = TestSwitch.new
       @b = TestSwitch.new
@@ -137,7 +137,7 @@ describe Trigger do
       end
     end
 
-    it "nested conditionals" do
+    it "nested ors" do
       a = TestSwitch.new
       b = TestSwitch.new
       c = TestSwitch.new
@@ -183,9 +183,9 @@ describe Trigger do
       end
     end
 
-    it "custom conditional" do
+    it "custom create_condition" do
       def xor(cond1, cond2)
-        conditional {|cond| [
+        create_condition {|cond| [
           _if(cond1)[cond.toggle],
           _if(cond2)[cond.toggle],
         ]}
@@ -282,7 +282,7 @@ describe Trigger do
     end
   end
 
-  describe "Math" do
+  xdescribe "Math" do
     it "x << C" do
       a = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
       b = TestCounter.new(min: 0, max: 10, range: [1, 2, 3])
