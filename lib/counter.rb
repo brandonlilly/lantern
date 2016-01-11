@@ -1,6 +1,7 @@
 require_relative 'actions'
 require_relative 'conditions'
 require_relative 'grouping'
+require_relative 'assignment'
 
 class Counter
   include AndOr
@@ -42,11 +43,11 @@ class Counter
   end
 
   def add(amount)
-    action(:add, amount)
+    amount == 0 ? [] : action(:add, amount)
   end
 
   def subtract(amount)
-    action(:subtract, amount)
+    amount == 0 ? [] : action(:subtract, amount)
   end
 
   def setTo(amount)
@@ -55,123 +56,132 @@ class Counter
   end
 
   def <<(other)
-    if other.is_a?(Integer)
-      modifyBounds(min: other, max: other, step: 1)
-      return action(:setto, other)
-    end
-    other = Product.new(other) if other.is_a?(Counter)
-    other = Sum.new(other) if other.is_a?(Product)
-    if other.contains_none?(self)
-      modifyBounds(min: other.min, max: other.max, step: other.step)
-      [
-        action(:setto, other.offset),
-        other.evaluateInto(self),
-      ]
-    elsif other.contains_self?(self)
-      other.remove_self(self)
-      return [] if other.list.length == 0 && other.constant == 0
-      [
-        action(:add, other.offset),
-        other.evaluateInto(self),
-      ]
-    else
-      temp = DC.new(min: min, max: max, step: step, implicit: true)
-      [
-        temp << other,
-        action(:setto, temp.min),
-        temp.countoff(self),
-      ]
-    end
+    other = Product.new(other) if !other.is_a?(Sum) && !other.is_a?(Product)
+    other = Sum.new(other) if !other.is_a?(Sum)
+    Assignment.new(self, other)
+    Assignment.new(self, other).generate # TODO: remove this line
   end
 
   def +(other)
-    return min + other if cost == 0
     Product.new(self) + other
   end
 
   def -(other)
-    return min - other if cost == 0
     Product.new(self) - other
   end
 
   def -@
-    return -min if cost == 0
     Product.new(self) * -1
   end
 
   def *(other)
-    return min * other if cost == 0
     Product.new(self) * other
   end
 
   def /(other)
-    return min / other if cost == 0
     raise NotImplementedError
   end
 
   def %(other)
-    return min % other if cost == 0
     raise NotImplementedError
   end
 
   def **(other)
-    return min ** other if cost == 0
     raise NotImplementedError
   end
 
   def ==(other)
-    return min == other if cost == 0
-    return never() if min > other.max || max < other.min
-    return condition(:exactly, other) if other.is_a?(Integer)
-    return other == self if lower_cost?(other)
-    compare(other, :==)
+    Product.new(self) == other
   end
 
   def !=(other)
-    return min != other if cost == 0
-    return [] if min > other.max || max < other.min
-    return !(other == self) if lower_cost?(other)
-    !(self == other)
+    Product.new(self) != other
   end
 
   def >(other)
-    return min > other if cost == 0
-    return [] if min > other.max
-    return never() if max <= other.min
-    return condition(:atleast, other+1) if other.is_a?(Integer)
-    return other < self if lower_cost?(other)
-    compare(other, :>)
+    Product.new(self) > other
   end
 
   def <(other)
-    return min < other if cost == 0
-    return [] if min < other.max
-    return never() if max >= other.min
-    return condition(:atmost, other-1) if other.is_a?(Integer)
-    return other > self if lower_cost?(other)
-    compare(other, :<)
+    Product.new(self) < other
   end
 
   def >=(other)
-    return min >= other if cost == 0
-    return [] if min >= other.max
-    return never() if max < other.min
-    return condition(:atleast, other) if other.is_a?(Integer)
-    return other <= self if lower_cost?(other)
-    compare(other, :>=)
+    Product.new(self) >= other
   end
 
   def <=(other)
-    return min <= other if cost == 0
-    return [] if min <= other.max
-    return never() if max > other.min
-    return condition(:atmost, other) if other.is_a?(Integer)
-    return other >= self if lower_cost?(other)
-    compare(other, :<=)
+    Product.new(self) <= other
+  end
+
+  # def ==(other)
+  #   return min == other if cost == 0
+  #   return never() if min > other.max || max < other.min
+  #   return condition(:exactly, other) if other.is_a?(Integer)
+  #   return other == self if lower_cost?(other)
+  #   compare(other, :==)
+  # end
+  #
+  # def !=(other)
+  #   return min != other if cost == 0
+  #   return [] if min > other.max || max < other.min
+  #   return !(other == self) if lower_cost?(other)
+  #   !(self == other)
+  # end
+  #
+  # def >(other)
+  #   return min > other if cost == 0
+  #   return [] if min > other.max
+  #   return never() if max <= other.min
+  #   return condition(:atleast, other+1) if other.is_a?(Integer)
+  #   return other < self if lower_cost?(other)
+  #   compare(other, :>)
+  # end
+  #
+  # def <(other)
+  #   return min < other if cost == 0
+  #   return [] if min < other.max
+  #   return never() if max >= other.min
+  #   return condition(:atmost, other-1) if other.is_a?(Integer)
+  #   return other > self if lower_cost?(other)
+  #   compare(other, :<)
+  # end
+  #
+  # def >=(other)
+  #   return min >= other if cost == 0
+  #   return [] if min >= other.max
+  #   return never() if max < other.min
+  #   return condition(:atleast, other) if other.is_a?(Integer)
+  #   return other <= self if lower_cost?(other)
+  #   compare(other, :>=)
+  # end
+  #
+  # def <=(other)
+  #   return min <= other if cost == 0
+  #   return [] if min <= other.max
+  #   return never() if max > other.min
+  #   return condition(:atmost, other) if other.is_a?(Integer)
+  #   return other >= self if lower_cost?(other)
+  #   compare(other, :<=)
+  # end
+
+  def count(other)
+    representation == other.representation ? 1 : 0
   end
 
   def lower_cost?(other)
     [cost, (max - other.min + step - 1) / step].min > [other.cost, (other.max - min + other.step - 1) / other.step].min
+  end
+
+  def countoff(range, min, condGroup, actGroup)
+    power = nearestPower(range)
+    actions = []
+    each_power(power) do |k|
+      actions << _if( objs.map { |obj| obj.list.first >= k * obj.coefficient + min } )[
+        objs.map { |obj| obj.list.first << obj.list.first + k * obj.coefficient }
+      ]
+    end
+    actions
   end
 
   def compare(other, symbol)

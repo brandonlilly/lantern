@@ -2,8 +2,15 @@ class Grouping
   attr_accessor :constant, :list
 
   def initialize(other)
+    if other.is_a?(Integer)
+      self.list = []
+      self.constant = other
+      return
+    end
+
     self.list = [other]
     self.constant = constant_default
+    simplify
 
     post_initialize(other)
   end
@@ -28,6 +35,41 @@ class Grouping
     self * -1
   end
 
+  def ==(other)
+    compare(other, :==)
+  end
+
+  def !=(other)
+    compare(other, :!=)
+  end
+
+  def >(other)
+    compare(other, :>)
+  end
+
+  def <(other)
+    compare(other, :<)
+  end
+
+  def >=(other)
+    compare(other, :>=)
+  end
+
+  def <=(other)
+    compare(other, :<=)
+  end
+
+  def compare(other, symbol)
+    return Product.new(self).send(symbol, other) if !self.is_a?(Sum) && !self.is_a?(Product)
+    return Sum.new(self).send(symbol, other) if !self.is_a?(Sum)
+    other = Sum.new(other) if !other.is_a?(Sum)
+    # TODO: put in Conditional / Compare / Assignment class
+  end
+
+  def count(other)
+    list.reduce(0) { |acc, el| acc += el.count(other) }
+  end
+
   def insert(other)
     list << other
     list.sort!
@@ -40,8 +82,16 @@ class Grouping
       (cost < other.cost ? -1 : 1)
   end
 
+  def simplify
+    raise NotImplementedError
+  end
+
   def cost
     list.map(&:cost).reduce(symbol)
+  end
+
+  def offset
+    list.reduce(constant) { |acc, el| acc.send(symbol, el.min) }
   end
 
   def representation
@@ -51,8 +101,84 @@ class Grouping
   def to_s
     "(" + [constant].concat(list).join(symbol.to_s) + ")"
   end
-
 end
+
+
+class Sum < Grouping
+  def constant_default
+    0
+  end
+
+  def symbol
+    :+
+  end
+
+  def +(other)
+    other = Product.new(other) if !other.is_a?(Sum) && !other.is_a?(Product)
+    other = Sum.new(other) if !other.is_a?(Sum)
+    self.constant += other.constant
+    other.list.each {|el| insert(el)}
+    simplify
+    self
+  end
+
+  def *(other)
+    if other.is_a?(Integer)
+      return 0 if other == 0
+      self.constant *= other
+      list.each {|el| el.constant *= other}
+      return self
+    end
+    Product.new(self) * other
+  end
+
+  def insert(other)
+    list.each do |el|
+      if el.representation == other.representation
+        el.constant += other.constant
+        other = []
+        break
+      end
+    end
+    list << other
+    simplify
+    self
+  end
+
+  def contains_self?(other)
+    count(other) == 1 && list.any? { |el| el.contains_self?(other) }
+  end
+
+  def generate(other)
+    actions = []
+    list.each { |el| actions << el.generate(other) }
+    actions
+  end
+
+  def remove(other)
+    list.each { |el| el.remove(other) }
+    simplify
+  end
+
+  def simplify
+    self.constant += list.select { |el| el.list.empty? }.map(&:constant).reduce(:+) # TODO: problematic for dc1 << dc2
+    list.reject! { |el| el.list.empty? || el.constant == 0 }
+    list.sort!
+  end
+
+  def min
+    list.reduce(constant) { |acc, el| acc += el.min }
+  end
+
+  def max
+    list.reduce(constant) { |acc, el| acc += el.max }
+  end
+
+  def step
+    list.empty? ? 1 : list.reduce(list.first) { |acc, el| acc = acc.gcd(el) }
+  end
+end
+
 
 class Product < Grouping
   def constant_default
@@ -68,49 +194,42 @@ class Product < Grouping
   end
 
   def *(other)
-    other = Product.new(other) if other.is_a?(Counter)
-    if other.is_a?(Integer)
-      return 0 if other == 0
-      self.constant *= other
-    elsif other.is_a?(Sum)
-      insert(other)
-    elsif other.is_a?(Product)
-      other.list.each {|elem| insert(elem)}
-    else
-      raise ArgumentError, "Input needs to be an Integer, Counter, Sum, or Product"
-    end
+    other = Product.new(other) if !other.is_a?(Product)
+    self.constant *= other.constant
+    other.list.each {|el| insert(el)}
+    simplify
     self
   end
 
-  def contains?(other)
-    return 1 if list.length == 1 && list.first.representation == other.representation && constant == 1
-    return 2 if list.any? { |elem| elem.representation == other.representation }
-    0
+  def contains_self?(other)
+    list.length == 1 && list.first.representation == other.representation && constant == 1
   end
 
-  def remove_self(other)
-    list.delete(other)
-    list.length == 0
-  end
-
-  def evaluateInto(other)
+  def generate(other)
     raise NotImplementedError if list.length > 1
     actions = []
-    list.each { |elem| actions << elem.countoff(other, constant) }
+    list.each { |el| actions << el.countoff(other, constant) }
     actions
   end
 
-  def offset
-    list.reduce(constant) { |acc, el| acc *= el.min }
+  def remove(other)
+    self.constant = 0 if representation == other.representation
+    list.delete(other)
+    list.each { |el| el.remove(other) }
+    simplify
+  end
+
+  def simplify
+    # self.constant *= list.select { |el| el.list.empty? }.map(&:constant).reduce(:*)
+    # list.reject! { |el| el.list.empty? }
+    list.sort!
   end
 
   def minAndMax
-    minval = constant
-    maxval = constant
-    list.each do |elem|
-      arr = [minval * elem.min, minval * elem.max, maxval * elem.min, maxval * elem.max]
-      minval = arr.min
-      maxval = arr.max
+    [minval = constant, maxval = constant]
+    list.each do |el|
+      arr = [minval * el.min, minval * el.max, maxval * el.min, maxval * el.max]
+      [minval = arr.min, maxval = arr.max]
     end
     {min: minval, max: maxval}
   end
@@ -125,93 +244,5 @@ class Product < Grouping
 
   def step
     list.reduce(constant) { |acc, el| acc *= el.step }.abs
-  end
-end
-
-class Sum < Grouping
-  def constant_default
-    0
-  end
-
-  def symbol
-    :+
-  end
-
-  def +(other)
-    other = Product.new(other) if other.is_a?(Counter)
-    if other.is_a?(Integer)
-      self.constant += other
-    elsif other.is_a?(Product)
-      insert(other)
-    elsif other.is_a?(Sum)
-      self.constant += other.constant
-      other.list.each {|elem| insert(elem)}
-    else
-      raise ArgumentError, "Input needs to be an Integer, Counter, Sum, or Product"
-    end
-    list.length == 0 ? constant : self
-  end
-
-  def *(other)
-    if other.is_a?(Integer)
-      return 0 if other == 0
-      self.constant *= other
-      list.each {|elem| elem.constant *= other}
-      return self
-    end
-    Product.new(self) * other
-  end
-
-  def insert(other)
-    (0...list.length).each do |i|
-      item = list[i]
-      if item.representation == other.representation
-        item.constant += other.constant
-        list.delete_at(i) if item.constant == 0
-        return self
-      end
-    end
-    list << other
-    list.sort!
-    self
-  end
-
-  def contains_none?(other)
-    list.reduce(0) { |acc, el| acc += el.contains?(other) } == 0
-  end
-
-  def contains_self?(other)
-    list.reduce(0) { |acc, el| acc += el.contains?(other) } == 1
-  end
-
-  def remove_self(other)
-    (0...list.length).each do |i|
-      item = list[i]
-      list.delete_at(i) if item.remove_self(other)
-    end
-  end
-
-  def evaluateInto(other)
-    actions = []
-    list.each { |elem| actions << elem.evaluateInto(other) }
-    actions
-  end
-
-  def offset
-    list.reduce(constant) { |acc, el| acc += el.offset }
-  end
-
-  def min
-    list.reduce(constant) { |acc, el| acc += el.min }
-  end
-
-  def max
-    list.reduce(constant) { |acc, el| acc += el.max }
-  end
-
-  def step
-    return 1 if list.length == 0
-    return list.first.step if list.length == 1
-    list.map(&:step).gcd
   end
 end
