@@ -26,6 +26,9 @@ class Trigger
     return true if actions.empty?
     if conditions.size == 1 &&
        actions.size == 2 &&
+       conditions[0].is_a?(Condition) &&
+       actions[0].is_a?(Action) &&
+       actions[1].is_a?(Action) &&
        conditions[0].type?("Switch") &&
        actions[0].type?("Set Switch") &&
        actions[1].type?("Set Switch") &&
@@ -73,9 +76,9 @@ class Trigger
         current_trig.conditions << condition.to_cond
       end
 
-      if condition.is_a?(Conditional)
+      if condition.is_a?(OrCondtion)
         if !condition.inverted
-          cond = Switch.temp
+          cond = Switch.new
           cond_switches << cond
 
           block_actions = condition.action_block.call(cond)
@@ -83,8 +86,8 @@ class Trigger
           trigs.concat(current_trig.unfold)
           current_trig = Trigger.new(conditions: [cond.set?], players: players)
         else
-          cond = Switch.temp
-          temp = Switch.temp
+          cond = Switch.new
+          temp = Switch.new
           cond_switches << cond
           cond_switches << temp
 
@@ -109,7 +112,7 @@ class Trigger
       end
 
       if action.is_a?(Trigger)
-        temp = Switch.temp
+        temp = Switch.new
         current_trig.actions << (temp << true)
         trigs << current_trig
         trigger = action
@@ -128,6 +131,14 @@ class Trigger
     end
 
     trigs
+  end
+
+  def generate()
+    dcs = []
+
+    conditions.flatten.each do |condition|
+      
+    end
   end
 end
 

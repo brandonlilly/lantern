@@ -1,6 +1,6 @@
 module AndOr
   def |(other)
-    conditional {|cond| [
+    create_condition {|cond| [
       _if(self)[ cond << true ],
       _if(other)[ cond << true ],
     ]}
@@ -11,7 +11,7 @@ module AndOr
   end
 
   def !
-    conditional(inverted: true) {|cond| [
+    create_condition(inverted: true) {|cond| [
       _if(self)[ cond << true ]
     ]}
   end
@@ -28,7 +28,7 @@ class ConditionList < Array
       return self + other
     end
 
-    if other.is_a?(Condition) || other.is_a?(Conditional) || other.class.method_defined?(:to_cond)
+    if other.is_a?(Condition) || other.is_a?(OrCondtion) || other.class.method_defined?(:to_cond)
       return self.concat([other])
     end
 
@@ -37,7 +37,7 @@ class ConditionList < Array
 
 end
 
-class Conditional
+class OrCondtion
   include AndOr
 
   attr_accessor :action_block, :inverted
@@ -71,6 +71,6 @@ class Conditional
   end
 end
 
-def conditional(options = {}, &action_block)
-  Conditional.new(options, action_block)
+def create_condition(options = {}, &action_block)
+  OrCondtion.new(options, action_block)
 end

@@ -189,7 +189,7 @@ class Counter
     range = (max - minval) / step
     power = nearestPower(range)
 
-   conditional do |cond|
+   create_condition do |cond|
      temp = DC.new(min: 0, max: range, implicit: true)
      actions = []
 

@@ -42,14 +42,14 @@ _if( xor(red, blue) )[
 ```
 
 
-### conditional
-`conditional` is a function used to create custom conditions. It expects a block that returns an array of actions. The block is passed a switch which you are expected to set based on when the condition is met.
+### create_condition
+`create_condition` is a function used to create custom conditions. It expects a block that returns an array of actions. The block is passed a switch which you are expected to set based on when the condition is met.
 
-Suppose you wanted to implement the xor condition using `conditional`.
+Suppose you wanted to implement the xor condition using `create_condition`.
 
 ```ruby
 def xor(switch1, switch2)
-  conditional do |cond|
+  create_condition do |cond|
     [
       _if(switch1)[ cond.toggle ],
       _if(switch2)[ cond.toggle ],

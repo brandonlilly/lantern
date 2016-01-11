@@ -6,9 +6,10 @@ require_relative 'fixnum'
 
 class DC < Counter
   include StoreId
+  @@store = Store.new
 
-  def post_initialize(options = {})
-    initialize_store(options)
+  def post_initialize(options)
+    initialize_store(options, @@store)
   end
 
   def player
