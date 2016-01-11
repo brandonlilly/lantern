@@ -60,8 +60,9 @@ class Grouping
   end
 
   def compare(other, symbol)
-    return Product.new(self).send(symbol, other) if !self.is_a?(Sum) && !self.is_a?(Product)
-    return Sum.new(self).send(symbol, other) if !self.is_a?(Sum)
+    return Product.new(self).compare(other, symbol) if !self.is_a?(Sum) && !self.is_a?(Product)
+    return Sum.new(self).compare(other, symbol) if !self.is_a?(Sum)
+    other = Product.new(other) if !other.is_a?(Sum) && !other.is_a?(Product)
     other = Sum.new(other) if !other.is_a?(Sum)
     # TODO: put in Conditional / Compare / Assignment class
   end
