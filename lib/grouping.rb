@@ -73,7 +73,7 @@ class Grouping
 
   def insert(other)
     list << other
-    list.sort!
+    simplify
     self
   end
 
@@ -162,7 +162,7 @@ class Sum < Grouping
   end
 
   def simplify
-    self.constant += list.select { |el| el.list.empty? }.map(&:constant).reduce(:+) # TODO: problematic for dc1 << dc2
+    self.constant += list.select { |el| el.list.empty? }.map(&:constant).reduce(0, :+) # TODO: problematic for dc1 << dc2
     list.reject! { |el| el.list.empty? || el.constant == 0 }
     list.sort!
   end
@@ -176,7 +176,7 @@ class Sum < Grouping
   end
 
   def step
-    list.empty? ? 1 : list.reduce(list.first) { |acc, el| acc = acc.gcd(el) }
+    list.empty? ? 1 : list.reduce(list.first.step) { |acc, el| acc = acc.gcd(el.step) }
   end
 end
 

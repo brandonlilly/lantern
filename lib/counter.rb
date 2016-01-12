@@ -173,16 +173,16 @@ class Counter
     [cost, (max - other.min + step - 1) / step].min > [other.cost, (other.max - min + other.step - 1) / other.step].min
   end
 
-  def countoff(range, min, condGroup, actGroup)
-    power = nearestPower(range)
-    actions = []
-    each_power(power) do |k|
-      actions << _if( objs.map { |obj| obj.list.first >= k * obj.coefficient + min } )[
-        objs.map { |obj| obj.list.first << obj.list.first + k * obj.coefficient }
-      ]
-    end
-    actions
-  end
+  # def countoff(range, min, condGroup, actGroup)
+  #   power = nearestPower(range)
+  #   actions = []
+  #   each_power(power) do |k|
+  #     actions << _if( objs.map { |obj| obj.list.first >= k * obj.coefficient + min } )[
+  #       objs.map { |obj| obj.list.first << obj.list.first + k * obj.coefficient }
+  #     ]
+  #   end
+  #   actions
+  # end
 
   def compare(other, symbol)
     cost < (max - other.min + step - 1) / step ? minval = min : minval = other.min + (max - other.min) % step

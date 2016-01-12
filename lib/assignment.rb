@@ -22,7 +22,7 @@ class Assignment
       actions << counter.setTo(grouping.offset)
       actions << grouping.generate(counter)
     elsif grouping.contains_self?(counter)
-      grouping.remove_self(counter)
+      grouping.remove(counter)
       actions << counter.add(grouping.offset)
       actions << grouping.generate(counter)
     else
