@@ -145,11 +145,8 @@ class Counter
   end
 
   def countoff(condGroup, actGroup)
-    condGroup = [condGroup] unless condGroup.is_a?(Array)
-    actGroup = [actGroup] unless actGroup.is_a?(Array)
-    (condGroup + actGroup).each { |el| el = 1*el if el.is_a?(Counter) } #TODO: this line does not set for some reason
-    raise ArgumentError if (condGroup + actGroup).any? { |el| !el.is_a?(Product) }
-
+    condGroup = formatGroup(condGroup)
+    actGroup = formatGroup(actGroup)
     each_power(cost).map do |k|
       _if( condGroup.map { |el| el.list.first >= k * el.constant + min } )[
         actGroup.map { |el| el.list.first.add(k * el.constant) } # TODO: implement el.list.first << el.list.first + k * el.constant ?
@@ -158,6 +155,12 @@ class Counter
   end
 
   protected
+
+  def formatGroup(obj)
+    obj = [obj] unless obj.is_a?(Array)
+    raise ArgumentError if obj.any? { |el| !el.is_a?(Product) && !el.is_a?(Counter)}
+    obj.map { |el| el.is_a?(Counter) ? 1 * el : el }
+  end
 
   def nearestPower(num)
     num <= 0 ? 0 : 2 ** Math.log(num,2).floor

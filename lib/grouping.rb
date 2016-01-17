@@ -215,8 +215,8 @@ class Product < Grouping
     list.map do |el|
       temp = DC.new(min: 0, max: el.cost)
       [
-        el.countoff(1*el, [constant*other, -1*el, 1*temp]),
-        temp.countoff(1*temp, [1*el, -1*temp]),
+        el.countoff(el, [constant*other, -el, temp]),
+        temp.countoff(temp, [el, -temp]),
         # temp << 0, #TODO: can add this in if we want to be safe
       ]
     end
