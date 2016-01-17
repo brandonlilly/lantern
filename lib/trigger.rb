@@ -24,21 +24,21 @@ class Trigger
 
   def superfluous?
     return true if actions.empty?
-    if conditions.size == 1 &&
-       actions.size == 2 &&
-       conditions[0].is_a?(Condition) &&
-       actions[0].is_a?(Action) &&
-       actions[1].is_a?(Action) &&
-       conditions[0].type?("Switch") &&
-       actions[0].type?("Set Switch") &&
-       actions[1].type?("Set Switch") &&
-       conditions[0].params[:r] == actions[0].params[:gs] &&
-       actions[1].params[:gs] == actions[0].params[:gs] &&
-       conditions[0].params[:m] == "is set" &&
-       actions[0].params[:n] == "clear" &&
-       actions[1].params[:n] == "set"
-       return true
-     end
+    # if conditions.size == 1 &&
+    #    actions.size == 2 &&
+    #    conditions[0].is_a?(Condition) &&
+    #    actions[0].is_a?(Action) &&
+    #    actions[1].is_a?(Action) &&
+    #    conditions[0].type?("Switch") &&
+    #    actions[0].type?("Set Switch") &&
+    #    actions[1].type?("Set Switch") &&
+    #    conditions[0].params[:r] == actions[0].params[:gs] &&
+    #    actions[1].params[:gs] == actions[0].params[:gs] &&
+    #    conditions[0].params[:m] == "is set" &&
+    #    actions[0].params[:n] == "clear" &&
+    #    actions[1].params[:n] == "set"
+    #    return true
+    #  end
     false
   end
 
@@ -136,8 +136,16 @@ class Trigger
   def generate()
     dcs = []
 
+    trigs = []
+    current_trig = Trigger.new(players: players)
+    cond_switches = []
+
     conditions.flatten.each do |condition|
-      
+      current_trig.conditions << condition.to_cond
+    end
+
+    actions.each do |action|
+
     end
   end
 end

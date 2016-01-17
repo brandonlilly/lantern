@@ -1,5 +1,21 @@
 require_relative 'data'
 
+def nearestPower(num)
+  i = 1
+  i <<= 1 while 2*i <= num
+  i
+end
+
+def each_power(power, &block)
+  return to_enum(:each_power, power) unless block_given?
+
+  k = power
+  while k >= 1
+    block.call(k)
+    k = k / 2
+  end
+end
+
 def format_player(player)
   str = player.to_s.downcase
   return "Player #{str.scan(/(\d+)$/)[0][0]}" if str[/p\d+$/] || str[/player ?\d+$/]

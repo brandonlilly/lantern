@@ -1,3 +1,5 @@
+require 'byebug'
+
 class Grouping
   attr_accessor :constant, :list
 
@@ -5,12 +7,11 @@ class Grouping
     if other.is_a?(Integer)
       self.list = []
       self.constant = other
-      return
+    else
+      self.list = [other]
+      self.constant = constant_default
+      simplify
     end
-
-    self.list = [other]
-    self.constant = constant_default
-    simplify
 
     post_initialize(other)
   end
@@ -68,7 +69,8 @@ class Grouping
   end
 
   def count(other)
-    list.reduce(0) { |acc, el| acc += el.count(other) }
+    debugger
+    list.reduce(0) { |acc, el| acc + el.count(other) }
   end
 
   def insert(other)
@@ -151,9 +153,7 @@ class Sum < Grouping
   end
 
   def generate(other)
-    actions = []
-    list.each { |el| actions << el.generate(other) }
-    actions
+    list.map { |el| el.generate(other) }
   end
 
   def remove(other)
@@ -162,7 +162,7 @@ class Sum < Grouping
   end
 
   def simplify
-    self.constant += list.select { |el| el.list.empty? }.map(&:constant).reduce(:+) # TODO: problematic for dc1 << dc2
+    self.constant += list.select {|el| el.list.empty?}.map(&:constant).reduce(0, :+)
     list.reject! { |el| el.list.empty? || el.constant == 0 }
     list.sort!
   end
@@ -176,7 +176,7 @@ class Sum < Grouping
   end
 
   def step
-    list.empty? ? 1 : list.reduce(list.first) { |acc, el| acc = acc.gcd(el) }
+    list.empty? ? 1 : list.reduce(list.first.step) { |acc, el| acc.gcd(el.step) }
   end
 end
 
@@ -227,19 +227,28 @@ class Product < Grouping
   end
 
   def minAndMax
-    [minval = constant, maxval = constant]
+    minval, maxval = constant, constant
     list.each do |el|
       arr = [minval * el.min, minval * el.max, maxval * el.min, maxval * el.max]
-      [minval = arr.min, maxval = arr.max]
+      minval, maxval = arr.min, arr.max
     end
     {min: minval, max: maxval}
   end
 
+  def bounds
+    list.reduce([constant, constant]) do |acc, el|
+      bounds = [ acc.min * el.min, acc.min * el.max, acc.max * el.min, acc.max * el.max ]
+      {min: bounds.min, max: bounds.max}
+    end
+  end
+
   def min
+    bounds[:min]
     minAndMax[:min]
   end
 
   def max
+    bounds[:max]
     minAndMax[:max]
   end
 

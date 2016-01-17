@@ -2,6 +2,7 @@ require_relative 'actions'
 require_relative 'conditions'
 require_relative 'grouping'
 require_relative 'assignment'
+require_relative 'helpers'
 
 class Counter
   include AndOr
@@ -43,11 +44,13 @@ class Counter
   end
 
   def add(amount)
-    amount == 0 ? [] : action(:add, amount)
+    return [] if amount == 0
+    action(:add, amount)
   end
 
   def subtract(amount)
-    amount == 0 ? [] : action(:subtract, amount)
+    return [] if amount == 0
+    action(:subtract, amount)
   end
 
   def setTo(amount)
@@ -170,18 +173,16 @@ class Counter
   end
 
   def lower_cost?(other)
-    [cost, (max - other.min + step - 1) / step].min > [other.cost, (other.max - min + other.step - 1) / other.step].min
+    [ cost, (max - other.min + step - 1) / step ].min > [ other.cost, (other.max - min + other.step - 1) / other.step ].min
   end
 
   def countoff(range, min, condGroup, actGroup)
     power = nearestPower(range)
-    actions = []
-    each_power(power) do |k|
-      actions << _if( objs.map { |obj| obj.list.first >= k * obj.coefficient + min } )[
+    each_power(power).map do |k|
+      _if( objs.map { |obj| obj.list.first >= k * obj.coefficient + min } )[
         objs.map { |obj| obj.list.first << obj.list.first + k * obj.coefficient }
       ]
     end
-    actions
   end
 
   def compare(other, symbol)
@@ -274,22 +275,6 @@ class Counter
   def freeImplicitObjs(*objs)
     objs.each do |obj|
       obj.destroy if obj.is_a?(DC) && obj.implicit
-    end
-  end
-
-  def nearestPower(num)
-    i = 1
-    i <<= 1 while 2*i <= num
-    i
-  end
-
-  def each_power(power, &block)
-    return to_enum(:each_power, power) unless block_given?
-
-    k = power
-    while k >= 1
-      block.call(k)
-      k = k / 2
     end
   end
 
