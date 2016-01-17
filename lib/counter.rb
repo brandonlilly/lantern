@@ -1,5 +1,3 @@
-require_relative 'actions'
-require_relative 'conditions'
 require_relative 'grouping'
 require_relative 'assignment'
 
@@ -43,21 +41,37 @@ class Counter
   end
 
   def add(amount)
-    amount == 0 ? [] : action(:add, amount)
+    amount == 0 ? [] : action(:add, adjust(amount))
   end
 
   def subtract(amount)
-    amount == 0 ? [] : action(:subtract, amount)
+    amount == 0 ? [] : action(:subtract, adjust(amount))
   end
 
   def setTo(amount)
-    adjusted = (amount + 2**31) % 2**32
-    action(:setto, adjusted)
+    action(:setto, adjust(amount, SHIFTED_ZERO))
   end
 
+  def exactly(amount)
+    condition(:exactly, adjust(amount, SHIFTED_ZERO))
+  end
+
+  def atMost(amount)
+    condition(:atmost, adjust(amount, SHIFTED_ZERO))
+  end
+
+  def atLeast(amount)
+    condition(:atleast, adjust(amount, SHIFTED_ZERO))
+  end
+
+  def adjust(amount, offset = 0)
+    (amount + offset) % MAX_INT
+  end
+
+  SHIFTED_ZERO = 2**31
+  MAX_INT = 2**32
+
   def <<(other)
-    other = Product.new(other) if !other.is_a?(Sum) && !other.is_a?(Product)
-    other = Sum.new(other) if !other.is_a?(Sum)
     Assignment.new(self, other)
     Assignment.new(self, other).generate # TODO: remove this line
   end
@@ -87,219 +101,74 @@ class Counter
   end
 
   def **(other)
-    raise NotImplementedError
+    raise NotImplementedError if !other.is_a?(Integer)
+    (1..other).reduce(1) { |acc, el| acc * self }
   end
 
   def ==(other)
+    return exactly(other) if other.is_a?(Integer)
     Product.new(self) == other
   end
 
-  def !=(other)
-    Product.new(self) != other
-  end
-
-  def >(other)
-    Product.new(self) > other
-  end
-
-  def <(other)
-    Product.new(self) < other
-  end
-
   def >=(other)
+    return atLeast(other) if other.is_a?(Integer)
     Product.new(self) >= other
   end
 
   def <=(other)
+    return atMost(other) if other.is_a?(Integer)
     Product.new(self) <= other
   end
 
-  # def ==(other)
-  #   return min == other if cost == 0
-  #   return never() if min > other.max || max < other.min
-  #   return condition(:exactly, other) if other.is_a?(Integer)
-  #   return other == self if lower_cost?(other)
-  #   compare(other, :==)
-  # end
-  #
-  # def !=(other)
-  #   return min != other if cost == 0
-  #   return [] if min > other.max || max < other.min
-  #   return !(other == self) if lower_cost?(other)
-  #   !(self == other)
-  # end
-  #
-  # def >(other)
-  #   return min > other if cost == 0
-  #   return [] if min > other.max
-  #   return never() if max <= other.min
-  #   return condition(:atleast, other+1) if other.is_a?(Integer)
-  #   return other < self if lower_cost?(other)
-  #   compare(other, :>)
-  # end
-  #
-  # def <(other)
-  #   return min < other if cost == 0
-  #   return [] if min < other.max
-  #   return never() if max >= other.min
-  #   return condition(:atmost, other-1) if other.is_a?(Integer)
-  #   return other > self if lower_cost?(other)
-  #   compare(other, :<)
-  # end
-  #
-  # def >=(other)
-  #   return min >= other if cost == 0
-  #   return [] if min >= other.max
-  #   return never() if max < other.min
-  #   return condition(:atleast, other) if other.is_a?(Integer)
-  #   return other <= self if lower_cost?(other)
-  #   compare(other, :>=)
-  # end
-  #
-  # def <=(other)
-  #   return min <= other if cost == 0
-  #   return [] if min <= other.max
-  #   return never() if max > other.min
-  #   return condition(:atmost, other) if other.is_a?(Integer)
-  #   return other >= self if lower_cost?(other)
-  #   compare(other, :<=)
-  # end
-
-  def count(other)
-    representation == other.representation ? 1 : 0
+  def !=(other)
+    !(self == other)
   end
 
-  def lower_cost?(other)
-    [cost, (max - other.min + step - 1) / step].min > [other.cost, (other.max - min + other.step - 1) / other.step].min
+  def >(other)
+    self >= other + 1
   end
 
-  # def countoff(range, min, condGroup, actGroup)
-  #   power = nearestPower(range)
-  #   actions = []
-  #   each_power(power) do |k|
-  #     actions << _if( objs.map { |obj| obj.list.first >= k * obj.coefficient + min } )[
-  #       objs.map { |obj| obj.list.first << obj.list.first + k * obj.coefficient }
-  #     ]
-  #   end
-  #   actions
-  # end
-
-  def compare(other, symbol)
-    cost < (max - other.min + step - 1) / step ? minval = min : minval = other.min + (max - other.min) % step
-    range = (max - minval) / step
-    power = nearestPower(range)
-
-   conditional do |cond|
-     temp = DC.new(min: 0, max: range, implicit: true)
-     actions = []
-
-     actions << temp.action(:setto, 0)
-     each_power(power) do |k|
-       actions << _if( self >= k * step + minval )[
-         other << other - k * step,
-         self << self - k * step,
-         temp << temp + k,
-       ]
-     end
-     actions << _if( other.send(symbol, minval) ) [ cond << true ]
-     each_power(power) do |k| #TODO replace with countoff?
-       actions << _if( temp >= k )[
-         other << other + k * step,
-         self << self + k * step,
-         temp << temp - k,
-       ]
-     end
-     actions << temp.action(:setto, 2**31)
-
-     freeImplicitObjs(temp)
-
-     actions
-   end
- end
-
-  # countoff
-  def countoff(*args)
-    # prep
-    coef = args.last.is_a?(Integer) ? args.last : 1
-    objs = args.last.is_a?(Integer) ? args[0..-2] : args
-
-    if objs.empty? || !objs.all? { |obj| obj.is_a?(Counter) }
-      raise ArgumentError, "Countoff requires Counter(s) as input (DC, Resource, Score, etc., optional multiplier on end)"
-    end
-
-    actions = []
-
-    # allocate temp DC
-    if !implicit
-      temp = DC.new(
-        min: 0,
-        max: (max - min) / step,
-        implicit: true
-      )
-    end
-
-    # preliminary
-    # actions << objs.map { |obj| obj.action(:add, max - min) } if step > 0 && max != 0
-    actions << temp.action(:setto, 0) if !implicit
-
-    # countoff
-    power = nearestPower((max - min) / step)
-    each_power(power) do |k|
-      actions << _if( self >= k * step + min )[
-        objs.map { |obj| obj << obj + coef * k * step },
-
-        !implicit ?
-          [ self << self - k * step, temp << temp + k ] :
-          [ self << self - k * step ],
-      ]
-    end
-
-    # count back
-    # actions << temp.countoff(self, self.step) if !implicit
-    actions << temp.countoff(self, step) if !implicit
-
-    # post
-    actions << action(:setto, 2**31) if implicit
-    freeImplicitObjs(self) if implicit
-
-    actions
+  def <(other)
+    self <= other - 1
   end
 
   def cost
     (max - min) / step
   end
 
-  protected
+  def offset
+    min
+  end
 
-  def freeImplicitObjs(*objs)
-    objs.each do |obj|
-      obj.destroy if obj.is_a?(DC) && obj.implicit
+  def count(other)
+    representation == other.representation ? 1 : 0
+  end
+
+  def countoff(condGroup, actGroup)
+    condGroup = [condGroup] unless condGroup.is_a?(Array)
+    actGroup = [actGroup] unless actGroup.is_a?(Array)
+    (condGroup + actGroup).each { |el| el = 1*el if el.is_a?(Counter) } #TODO: this line does not set for some reason
+    raise ArgumentError if (condGroup + actGroup).any? { |el| !el.is_a?(Product) }
+
+    each_power(cost).map do |k|
+      _if( condGroup.map { |el| el.list.first >= k * el.constant + min } )[
+        actGroup.map { |el| el.list.first.add(k * el.constant) } # TODO: implement el.list.first << el.list.first + k * el.constant ?
+      ]
     end
   end
 
+  protected
+
   def nearestPower(num)
-    i = 1
-    i <<= 1 while 2*i <= num
-    i
+    num <= 0 ? 0 : 2 ** Math.log(num,2).floor
   end
 
-  def each_power(power, &block)
-    return to_enum(:each_power, power) unless block_given?
-
-    k = power
+  def each_power(num, &block)
+    return to_enum(:each_power, num) unless block_given?
+    k = nearestPower(num)
     while k >= 1
       block.call(k)
       k = k / 2
-    end
-  end
-
-  def errorCheckObj(*objs)
-    unless objs.all? { |obj| !obj.is_a?(DC) || obj.bounded? }
-      raise ArgumentError, <<-MSG
-      DC must have defined bounds before it is used!
-      Consider defining bounds when it is declared,
-      ie. myDC = DC.new(min: -1, max: 5)"
-      MSG
     end
   end
 

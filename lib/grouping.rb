@@ -1,3 +1,5 @@
+require_relative 'counter'
+
 class Grouping
   attr_accessor :constant, :list
 
@@ -39,18 +41,6 @@ class Grouping
     compare(other, :==)
   end
 
-  def !=(other)
-    compare(other, :!=)
-  end
-
-  def >(other)
-    compare(other, :>)
-  end
-
-  def <(other)
-    compare(other, :<)
-  end
-
   def >=(other)
     compare(other, :>=)
   end
@@ -59,12 +49,28 @@ class Grouping
     compare(other, :<=)
   end
 
+  def >(other)
+    self > other + 1
+  end
+
+  def <(other)
+    self < other - 1
+  end
+
+  def !=(other)
+    !(self == other)
+  end
+
   def compare(other, symbol)
-    return Product.new(self).compare(other, symbol) if !self.is_a?(Sum) && !self.is_a?(Product)
-    return Sum.new(self).compare(other, symbol) if !self.is_a?(Sum)
-    other = Product.new(other) if !other.is_a?(Sum) && !other.is_a?(Product)
-    other = Sum.new(other) if !other.is_a?(Sum)
-    # TODO: put in Conditional / Compare / Assignment class
+    conditional do |cond|
+      temp = DC.new
+      [
+        temp << self - other,
+        # cond << temp.send(symbol, 0), #TODO: add this functionality later
+        _if(temp.send(symbol, 0)) [cond << true],
+        temp << 0,
+      ]
+    end
   end
 
   def count(other)
@@ -92,7 +98,7 @@ class Grouping
   end
 
   def offset
-    list.reduce(constant) { |acc, el| acc.send(symbol, el.min) }
+    list.reduce(constant) { |acc, el| acc.send(symbol, el.offset) }
   end
 
   def representation
@@ -151,9 +157,7 @@ class Sum < Grouping
   end
 
   def generate(other)
-    actions = []
-    list.each { |el| actions << el.generate(other) }
-    actions
+    list.map { |el| el.generate(other) }
   end
 
   def remove(other)
@@ -208,13 +212,18 @@ class Product < Grouping
 
   def generate(other)
     raise NotImplementedError if list.length > 1
-    actions = []
-    list.each { |el| actions << el.countoff(other, constant) }
-    actions
+    list.map do |el|
+      temp = DC.new(min: 0, max: el.cost)
+      [
+        el.countoff(1*el, [constant*other, -1*el, 1*temp]),
+        temp.countoff(1*temp, [1*el, -1*temp]),
+        # temp << 0, #TODO: can add this in if we want to be safe
+      ]
+    end
   end
 
   def remove(other)
-    self.constant = 0 if representation == other.representation
+    self.constant = 0 if representation == "(" + other.representation + ")"
     list.delete(other)
     list.each { |el| el.remove(other) }
     simplify

@@ -1,5 +1,3 @@
-require_relative 'actions'
-require_relative 'conditions'
 require_relative 'grouping'
 
 class Assignment
@@ -7,6 +5,9 @@ class Assignment
   attr_accessor :counter, :grouping
 
   def initialize(counter, grouping)
+    raise ArgumentError if !counter.is_a?(Counter)
+    grouping = Product.new(grouping) if !grouping.is_a?(Sum) && !grouping.is_a?(Product)
+    grouping = Sum.new(grouping) if !grouping.is_a?(Sum)
     self.counter = counter
     self.grouping = grouping
   end
@@ -26,10 +27,9 @@ class Assignment
       actions << counter.add(grouping.offset)
       actions << grouping.generate(counter)
     else
-      temp = DC.new(min: min, max: max, step: step, implicit: true)
+      temp = DC.new
       actions << temp << other
-      actions << counter.setTo(temp.min)
-      actions << temp.countoff(self)
+      actions << counter << temp
     end
     counter.modifyBounds(min: grouping.min, max: grouping.max, step: grouping.step)
     actions

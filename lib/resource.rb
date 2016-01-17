@@ -1,5 +1,8 @@
+require_relative 'store'
 require_relative 'actions'
 require_relative 'conditions'
+require_relative 'counter'
+require_relative 'fixnum'
 
 class Resource < Counter
   attr_accessor :player, :resource
@@ -10,13 +13,11 @@ class Resource < Counter
   end
 
   def condition(qmod, amount)
-    amount += 2**31
-    accumulate(player, qmod, amount % 2**32, resource)
+    accumulate(player, qmod, amount, resource)
   end
 
   def action(vmod, amount)
-    amount += 2**31 if vmod == :setto
-    setResources(player, vmod, amount % 2**32, resource)
+    setResources(player, vmod, amount, resource)
   end
 
   def clone_defaults

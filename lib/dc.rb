@@ -21,13 +21,11 @@ class DC < Counter
   end
 
   def condition(qmod, amount)
-    amount += 2**31
-    deaths(player, qmod, amount % 2**32, unit)
+    deaths(player, qmod, amount, unit)
   end
 
   def action(vmod, amount)
-    amount += 2**31 if vmod == :setto
-    setDeaths(player, vmod, amount % 2**32, unit)
+    setDeaths(player, vmod, amount, unit)
   end
 
   def representation
