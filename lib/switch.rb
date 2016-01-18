@@ -15,7 +15,7 @@ class Switch
   end
 
   def <<(other)
-    if other.is_a?(TrueClass) || other.is_a?(FalseClass)
+    if [TrueClass, FalseClass, String, Symbol].include?(other.class)
       return setSwitch(id, other)
     end
 
@@ -38,7 +38,11 @@ class Switch
   end
 
   def toggle
-    setSwitch(id, :toggle)
+    self << :toggle
+  end
+
+  def randomize
+    self << :randomize
   end
 
   def ==(other)
