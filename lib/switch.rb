@@ -1,6 +1,7 @@
 require_relative 'store'
 require_relative 'actions'
 require_relative 'conditions'
+require_relative 'assignment'
 
 class Switch
   include AndOr
@@ -15,22 +16,16 @@ class Switch
   end
 
   def <<(other)
-    if other.is_a?(TrueClass) || other.is_a?(FalseClass)
-      return setSwitch(id, other)
-    end
-
-    if other.is_a?(Switch)
-      return [
-        _if( other )[ self << true ],
-        _if( !other )[ self << false ],
-      ]
-    end
-
-    raise ArgumentError, "Expecting boolean or Switch: #{other}"
+    SwitchAssignment.new(self, other)
+    SwitchAssignment.new(self, other).generate # TODO: remove this line later
   end
 
-  def set
-    self << true
+  def setState(other)
+    setSwitch(id, other)
+  end
+
+  def set(other)
+    self << other
   end
 
   def clear
@@ -71,14 +66,5 @@ class Switch
 
   def !
     clone(inverted: !inverted)
-  end
-
-  def clone(options = {})
-    self.class.new(
-      store:    options[:store] || store,
-      id:       options[:id] || id,
-      implicit: options.fetch(:implicit, implicit),
-      inverted: options.fetch(:inverted, inverted)
-    )
   end
 end

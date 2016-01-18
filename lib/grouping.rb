@@ -38,23 +38,23 @@ class Grouping
   end
 
   def ==(other)
-    compare(other, :==)
+    compare(other, :exactly)
   end
 
   def >=(other)
-    compare(other, :>=)
+    compare(other, :atLeast)
   end
 
   def <=(other)
-    compare(other, :<=)
+    compare(other, :atMost)
   end
 
   def >(other)
-    self > other + 1
+    self >= other + 1
   end
 
   def <(other)
-    self < other - 1
+    self <= other - 1
   end
 
   def !=(other)
@@ -62,10 +62,25 @@ class Grouping
   end
 
   def compare(other, symbol)
+    diff = self - other
+    if diff.list.empty?
+      return never if (symbol == :exactly && diff.constant != 0) ||
+                      (symbol == :atLeast && diff.constant < 0)  ||
+                      (symbol == :atMost && diff.constant > 0)
+      return []
+    end
+    product = diff.list.first
+    counter = product.list.first
+    if product.list.length == 1 && counter.is_a?(Counter)
+      quotient = -diff.constant / product.constant
+      remainder = -diff.constant % product.constant
+      return never if symbol == :exactly && remainder != 0
+      return counter.send(symbol, quotient)
+    end
     conditional do |cond|
       temp = DC.new
       [
-        temp << self - other,
+        temp << diff,
         # cond << temp.send(symbol, 0), #TODO: add this functionality later
         _if(temp.send(symbol, 0)) [cond << true],
         temp << 0,
@@ -147,7 +162,7 @@ class Sum < Grouping
         break
       end
     end
-    list << other
+    list << other unless other.empty?
     simplify
     self
   end
@@ -223,7 +238,7 @@ class Product < Grouping
   end
 
   def remove(other)
-    self.constant = 0 if representation == "(" + other.representation + ")"
+    self.constant = 0 if list.length == 1 && list.first === other
     list.delete(other)
     list.each { |el| el.remove(other) }
     simplify

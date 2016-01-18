@@ -72,8 +72,8 @@ class Counter
   MAX_INT = 2**32
 
   def <<(other)
-    Assignment.new(self, other)
-    Assignment.new(self, other).generate # TODO: remove this line
+    CounterAssignment.new(self, other)
+    CounterAssignment.new(self, other).generate # TODO: remove this line
   end
 
   def +(other)
@@ -106,17 +106,14 @@ class Counter
   end
 
   def ==(other)
-    return exactly(other) if other.is_a?(Integer)
     Product.new(self) == other
   end
 
   def >=(other)
-    return atLeast(other) if other.is_a?(Integer)
     Product.new(self) >= other
   end
 
   def <=(other)
-    return atMost(other) if other.is_a?(Integer)
     Product.new(self) <= other
   end
 
@@ -130,6 +127,11 @@ class Counter
 
   def <(other)
     self <= other - 1
+  end
+
+  def to_cond
+    raise ArgumentError
+    # self != 0
   end
 
   def cost
