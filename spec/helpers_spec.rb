@@ -41,18 +41,24 @@ describe "Helpers" do
       expect(format_switch_mod(false)).to eq("clear")
     end
 
-    it "handles :true, :false, :set, :clear, :toggle" do
+    it "handles :true, :false, :set, :clear, :toggle, :randomize" do
       expect(format_switch_mod(:true)).to eq("set")
       expect(format_switch_mod(:set)).to eq("set")
       expect(format_switch_mod(:false)).to eq("clear")
       expect(format_switch_mod(:clear)).to eq("clear")
-      expect(format_switch_mod(:toggle)).to eq("toggle")
+      expect(format_switch_mod(:clear)).to eq("clear")
+      expect(format_switch_mod(:randomize)).to eq("randomize")
     end
 
     it "allows properly formatted to pass" do
       expect(format_switch_mod("set")).to eq("set")
       expect(format_switch_mod("clear")).to eq("clear")
       expect(format_switch_mod("toggle")).to eq("toggle")
+      expect(format_switch_mod("randomize")).to eq("randomize")
+    end
+
+    it "allows for aliases" do
+      expect(format_switch_mod("random")).to eq("randomize")
     end
   end
 
