@@ -23,20 +23,7 @@ class Trigger
   end
 
   def superfluous?
-    return true if actions.empty?
-    if conditions.size == 1 &&
-       actions.size == 2 &&
-       conditions[0].type?("Switch") &&
-       actions[0].type?("Set Switch") &&
-       actions[1].type?("Set Switch") &&
-       conditions[0].params[:r] == actions[0].params[:gs] &&
-       actions[1].params[:gs] == actions[0].params[:gs] &&
-       conditions[0].params[:m] == "is set" &&
-       actions[0].params[:n] == "clear" &&
-       actions[1].params[:n] == "set"
-       return true
-     end
-    false
+    actions.empty? || scs?
   end
 
   def render
@@ -128,6 +115,22 @@ class Trigger
     end
 
     trigs
+  end
+
+  private
+
+  # check if trigger just clears then sets same switch
+  def scs?
+    conditions.size == 1 &&
+    actions.size == 2 &&
+    conditions[0].type?("Switch") &&
+    actions[0].type?("Set Switch") &&
+    actions[1].type?("Set Switch") &&
+    conditions[0].params[:r] == actions[0].params[:gs] &&
+    actions[1].params[:gs] == actions[0].params[:gs] &&
+    conditions[0].params[:m] == "is set" &&
+    actions[0].params[:n] == "clear" &&
+    actions[1].params[:n] == "set"
   end
 end
 

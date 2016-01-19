@@ -18,6 +18,7 @@ def format_switch_mod(value)
   str = value.to_s.downcase
   return "set" if ["set", "true"].include?(str)
   return "clear" if ["false", "clear", :false].include?(str)
+  return "randomize" if ["randomize", "random"].include?(str)
   return "toggle" if "toggle" == str
 
   value

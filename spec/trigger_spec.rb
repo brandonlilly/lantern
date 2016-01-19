@@ -32,6 +32,13 @@ describe Trigger do
       expect(trigger.superfluous?).to eq(true)
     end
 
+    it "is true for never condition" do
+      switch = Switch.new
+      trigger = Trigger.new(conditions: [switch.set?, never], actions: [display("foo")])
+
+      expect(trigger.superfluous?).to eq(true)
+    end
+
     it "true when only clears then sets same switch" do
       switch = Switch.new
       trigger = Trigger.new(conditions: [switch.set?], actions: [switch.clear, switch.set])

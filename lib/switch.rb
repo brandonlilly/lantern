@@ -20,6 +20,19 @@ class Switch
     SwitchAssignment.new(self, other).generate # TODO: remove this line later
   end
 
+  def oldSet(other)
+    if [TrueClass, FalseClass, String, Symbol].include?(other.class)
+      return setSwitch(id, other)
+    end
+
+    if other.is_a?(Switch)
+      return [
+        _if( other )[ self << true ],
+        _if( !other )[ self << false ],
+      ]
+    end
+  end
+
   def setState(other)
     setSwitch(id, other)
   end
@@ -33,7 +46,11 @@ class Switch
   end
 
   def toggle
-    setSwitch(id, :toggle)
+    self << :toggle
+  end
+
+  def randomize
+    self << :randomize
   end
 
   def ==(other)
