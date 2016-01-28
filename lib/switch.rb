@@ -20,6 +20,30 @@ class Switch
     SwitchAssignment.new(self, other).generate # TODO: remove this line later
   end
 
+  def +(other)
+    Product.new(self) + other
+  end
+
+  def -(other)
+    Product.new(self) - other
+  end
+
+  def -@
+    Product.new(self) * -1
+  end
+
+  def *(other)
+    Product.new(self) * other
+  end
+
+  def %(other)
+    raise NotImplementedError
+  end
+
+  def **(other)
+    raise NotImplementedError
+  end
+
   def oldSet(other)
     if [TrueClass, FalseClass, String, Symbol].include?(other.class)
       return setSwitch(id, other)
@@ -83,5 +107,42 @@ class Switch
 
   def !
     clone(inverted: !inverted)
+  end
+
+  def clone(options = {})
+    self.class.new(
+      store:    options[:store] || store,
+      id:       options[:id] || id,
+      implicit: options.fetch(:implicit, implicit),
+      inverted: options.fetch(:inverted, inverted)
+    )
+  end
+
+  def count(other)
+    representation == other.representation ? 1 : 0
+  end
+
+  def cost
+    0
+  end
+
+  def offset
+    0
+  end
+
+  def min
+    0
+  end
+
+  def max
+    1
+  end
+
+  def representation
+    "Switch#{id}"
+  end
+
+  def to_s
+    "Switch#{id}"
   end
 end

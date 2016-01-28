@@ -83,14 +83,12 @@ class SwitchAssignment < Assignment
   end
 
   def &(other)
-    puts "HERE"
-    grouping = grouping & other
+    grouping &= other
     self
   end
 
   def |(other)
-    puts "HERE"
-    grouping = grouping | other
+    grouping |= other
     self
   end
 

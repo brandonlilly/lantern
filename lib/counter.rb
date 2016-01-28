@@ -8,15 +8,15 @@ class Counter
 
   def initialize(options = {})
     self.max =  options[:max]
-    self.min =  options[:min] || 0
+    self.min =  options[:min]  || 0
     self.step = options[:step] || 1
 
     post_initialize(options)
   end
 
   def modifyBounds(options = {})
-    self.max =  options[:max] || max
-    self.min =  options[:min] || min
+    self.max =  options[:max]  || max
+    self.min =  options[:min]  || min
     self.step = options[:step] || step
   end
 
@@ -131,7 +131,7 @@ class Counter
 
   def to_cond
     raise ArgumentError
-    # self != 0
+    self != 0
   end
 
   def cost

@@ -4,21 +4,10 @@ class Grouping
   attr_accessor :constant, :list
 
   def initialize(other)
-    if other.is_a?(Integer)
-      self.list = []
-      self.constant = other
-      return
-    end
-
-    self.list = [other]
-    self.constant = constant_default
+    other.is_a?(Integer) ?
+      [ self.constant = other, self.list = [] ] :
+      [ self.constant = constant_default, self.list = [other] ]
     simplify
-
-    post_initialize(other)
-  end
-
-  def post_initialize(other)
-    nil
   end
 
   def symbol
@@ -94,8 +83,6 @@ class Grouping
 
   def insert(other)
     list << other
-    simplify
-    self
   end
 
   def <=>(other)
@@ -158,11 +145,11 @@ class Sum < Grouping
     list.each do |el|
       if el.representation == other.representation
         el.constant += other.constant
-        other = []
-        break
+        simplify
+        return
       end
     end
-    list << other unless other.empty?
+    list << other
     simplify
     self
   end
@@ -216,8 +203,10 @@ class Product < Grouping
   def *(other)
     other = Product.new(other) if !other.is_a?(Product)
     self.constant *= other.constant
-    other.list.each {|el| insert(el)}
+    other.list.each { |el| insert(el) }
+    puts "HERE[1]: #{self}"
     simplify
+    puts "HERE[2]: #{self}"
     self
   end
 
@@ -226,15 +215,16 @@ class Product < Grouping
   end
 
   def generate(other)
-    raise NotImplementedError if list.length > 1
-    list.map do |el|
-      temp = DC.new(min: 0, max: el.cost)
-      [
-        el.countoff(el, [constant*other, -el, temp]),
-        temp.countoff(temp, [el, -temp]),
+    # raise NotImplementedError if list.length > 1
+    # list.map do |el|
+      # temp = DC.new(min: 0, max: el.cost)
+      _if( list.select { |el| el.is_a?(Switch) }.reduce(:&) )[
+        # el.countoff(el, [constant*other, temp, -el]),
+        # temp.countoff(temp, [el, -temp]),
+        other << other + constant,
         # temp << 0, #TODO: can add this in if we want to be safe
       ]
-    end
+    # end
   end
 
   def remove(other)
@@ -247,16 +237,7 @@ class Product < Grouping
   def simplify
     # self.constant *= list.select { |el| el.list.empty? }.map(&:constant).reduce(:*)
     # list.reject! { |el| el.list.empty? }
-    list.sort!
-  end
-
-  def minAndMax
-    [minval = constant, maxval = constant]
-    list.each do |el|
-      arr = [minval * el.min, minval * el.max, maxval * el.min, maxval * el.max]
-      [minval = arr.min, maxval = arr.max]
-    end
-    {min: minval, max: maxval}
+    # list.sort!
   end
 
   def min
@@ -268,6 +249,18 @@ class Product < Grouping
   end
 
   def step
-    list.reduce(constant) { |acc, el| acc *= el.step }.abs
+    list.select {|el| !el.is_a?(Switch) }.reduce(constant) { |acc, el| acc *= el.step }.abs
   end
+
+  private
+
+  def minAndMax
+    [minval = constant, maxval = constant]
+    list.each do |el|
+      arr = [minval * el.min, minval * el.max, maxval * el.min, maxval * el.max]
+      [minval = arr.min, maxval = arr.max]
+    end
+    {min: minval, max: maxval}
+  end
+
 end
