@@ -129,6 +129,12 @@ class Counter
     self <= other - 1
   end
 
+  def <=>(other)
+    cost == other.cost ?
+      (representation < other.representation ? -1 : 1) :
+      (cost < other.cost ? -1 : 1)
+  end
+
   def to_cond
     raise ArgumentError
     self != 0

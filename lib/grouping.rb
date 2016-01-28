@@ -204,9 +204,7 @@ class Product < Grouping
     other = Product.new(other) if !other.is_a?(Product)
     self.constant *= other.constant
     other.list.each { |el| insert(el) }
-    puts "HERE[1]: #{self}"
     simplify
-    puts "HERE[2]: #{self}"
     self
   end
 
@@ -237,7 +235,7 @@ class Product < Grouping
   def simplify
     # self.constant *= list.select { |el| el.list.empty? }.map(&:constant).reduce(:*)
     # list.reject! { |el| el.list.empty? }
-    # list.sort!
+    list.sort!
   end
 
   def min
