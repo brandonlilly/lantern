@@ -1,4 +1,5 @@
-require_relative 'grouping'
+require_relative 'sumexpression'
+require_relative 'productexpression'
 require_relative 'assignment'
 
 class Counter
@@ -77,19 +78,19 @@ class Counter
   end
 
   def +(other)
-    Product.new(self) + other
+    ProductExpression.new(self) + other
   end
 
   def -(other)
-    Product.new(self) - other
+    ProductExpression.new(self) - other
   end
 
   def -@
-    Product.new(self) * -1
+    ProductExpression.new(self) * -1
   end
 
   def *(other)
-    Product.new(self) * other
+    ProductExpression.new(self) * other
   end
 
   def /(other)
@@ -106,15 +107,15 @@ class Counter
   end
 
   def ==(other)
-    Product.new(self) == other
+    ProductExpression.new(self) == other
   end
 
   def >=(other)
-    Product.new(self) >= other
+    ProductExpression.new(self) >= other
   end
 
   def <=(other)
-    Product.new(self) <= other
+    ProductExpression.new(self) <= other
   end
 
   def !=(other)
@@ -130,14 +131,12 @@ class Counter
   end
 
   def <=>(other)
-    cost == other.cost ?
-      (representation < other.representation ? -1 : 1) :
-      (cost < other.cost ? -1 : 1)
+    representation <=> other.representation
   end
 
   def to_cond
     raise ArgumentError
-    self != 0
+    # self != 0
   end
 
   def cost
@@ -152,12 +151,16 @@ class Counter
     representation == other.representation ? 1 : 0
   end
 
-  def countoff(condGroup, actGroup)
-    condGroup = formatGroup(condGroup)
-    actGroup = formatGroup(actGroup)
+  def unique
+    self
+  end
+
+  def countoff(*others)
+    others = formatGroup(others)
     each_power(cost).map do |k|
-      _if( condGroup.map { |el| el.list.first >= k * el.constant + min } )[
-        actGroup.map { |el| el.list.first.add(k * el.constant) } # TODO: implement el.list.first << el.list.first + k * el.constant ?
+      _if( self >= k * step + min )[
+        # TODO: implement el.list.first << el.list.first + k * step * el.constant ?
+        others.map { |el| el.list.first.add(k * step * el.constant) }
       ]
     end
   end
@@ -166,7 +169,7 @@ class Counter
 
   def formatGroup(obj)
     obj = [obj] unless obj.is_a?(Array)
-    raise ArgumentError if obj.any? { |el| !el.is_a?(Product) && !el.is_a?(Counter)}
+    raise ArgumentError if obj.any? { |el| !el.is_a?(ProductExpression) && !el.is_a?(Counter)}
     obj.map { |el| el.is_a?(Counter) ? 1 * el : el }
   end
 

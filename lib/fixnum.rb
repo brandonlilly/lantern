@@ -72,10 +72,6 @@ class Fixnum
     self.lt(other)
   end
 
-  def is_known?(other)
-    other.is_a?(Counter) || other.is_a?(Switch) || other.is_a?(Grouping)
-  end
-
   def min
     self
   end
@@ -86,6 +82,12 @@ class Fixnum
 
   def cost
     0
+  end
+
+  private
+
+  def is_known?(other)
+    other.is_a?(Counter) || other.is_a?(Switch) || other.is_a?(Expression)
   end
 
 end

@@ -1,6 +1,8 @@
 require_relative 'store'
 require_relative 'actions'
 require_relative 'conditions'
+require_relative 'sumexpression'
+require_relative 'productexpression'
 require_relative 'assignment'
 
 class Switch
@@ -21,19 +23,19 @@ class Switch
   end
 
   def +(other)
-    Product.new(self) + other
+    ProductExpression.new(self) + other
   end
 
   def -(other)
-    Product.new(self) - other
+    ProductExpression.new(self) - other
   end
 
   def -@
-    Product.new(self) * -1
+    ProductExpression.new(self) * -1
   end
 
   def *(other)
-    Product.new(self) * other
+    ProductExpression.new(self) * other
   end
 
   def %(other)
@@ -42,6 +44,26 @@ class Switch
 
   def **(other)
     raise NotImplementedError
+  end
+
+  def ==(other)
+    if other.is_a?(TrueClass) || other.is_a?(FalseClass)
+      return switchIsState(id, inverted ? !other : other)
+    end
+
+    if other.is_a?(Switch)
+      return (self & other) | (!self & !other)
+    end
+
+    false
+  end
+
+  def !=(other)
+    self == !other
+  end
+
+  def <=>(other)
+    representation <=> other.representation
   end
 
   def oldSet(other)
@@ -77,22 +99,6 @@ class Switch
     self << :randomize
   end
 
-  def ==(other)
-    if other.is_a?(TrueClass) || other.is_a?(FalseClass)
-      return switchIsState(id, inverted ? !other : other)
-    end
-
-    if other.is_a?(Switch)
-      return (self & other) | (!self & !other)
-    end
-
-    false
-  end
-
-  def !=(other)
-    self == !other
-  end
-
   def set?
     self == true
   end
@@ -120,6 +126,10 @@ class Switch
 
   def count(other)
     representation == other.representation ? 1 : 0
+  end
+
+  def unique
+    self
   end
 
   def cost

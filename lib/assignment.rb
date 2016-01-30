@@ -1,4 +1,5 @@
-require_relative 'grouping'
+require_relative 'sumexpression'
+require_relative 'productexpression'
 require_relative 'counter'
 require_relative 'switch'
 
@@ -40,8 +41,8 @@ class CounterAssignment < Assignment
   end
 
   def prepare_grouping(grouping)
-    grouping = Product.new(grouping) if !grouping.is_a?(Sum) && !grouping.is_a?(Product)
-    grouping = Sum.new(grouping) if !grouping.is_a?(Sum)
+    grouping = ProductExpression.new(grouping) if !grouping.is_a?(SumExpression) && !grouping.is_a?(ProductExpression)
+    grouping = SumExpression.new(grouping) if !grouping.is_a?(SumExpression)
     grouping
   end
 
