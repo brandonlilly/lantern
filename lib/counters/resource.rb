@@ -24,16 +24,10 @@ class Resource < Counter
   end
 
   def representation
-    "#{self}"
+    to_s
   end
 
   def to_s
-    if resource == :ore
-      "ore"
-    elsif resource == :gas
-      "gas"
-    else
-      "oreAndGas"
-    end
+    resource.to_s
   end
 end
