@@ -30,6 +30,10 @@ class Assignment
     raise NotImplementedError
   end
 
+  def to_s
+    "Assignment(" + object.to_s + "=" + grouping.to_s + ")"
+  end
+
 end
 
 

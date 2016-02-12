@@ -2,11 +2,12 @@ require_relative 'dc'
 require_relative 'productexpression'
 
 class OtherExpression
-  attr_accessor :args, :action_block, :dc, :triggers
+  attr_accessor :actions, :function, :args, :dc, :triggers
 
-  def initialize(args, action_block)
-    self.args = args
-    self.action_block = action_block
+  def initialize(actions, function, *args)
+    self.actions = actions
+    self.function = function
+    self.args = *args
     self.dc = DC.new
     self.triggers = []
   end
@@ -74,8 +75,9 @@ class OtherExpression
 
   def process
     if triggers.empty?
-      triggers << dc << 0
-      triggers << action_block.call(dc)
+      triggers << actions
+      triggers << (dc << 0) #TODO: can remove this
+      triggers << (function.call(dc, *args))
     end
   end
 
@@ -129,6 +131,21 @@ class OtherExpression
   end
 end
 
-def action(*args, &action_block)
-  OtherExpression.new(args, action_block)
+
+def custom(fn_name)
+  fn = method(fn_name)
+
+  define_method(fn_name) do |*args|
+    actions = []
+    new_args = args.map do |arg|
+      if arg.is_a?(Expression)
+        temp = DC.new
+        actions << (temp << arg)
+        next temp
+      end
+      arg
+    end
+
+    OtherExpression.new(actions, fn, *new_args)
+  end
 end
