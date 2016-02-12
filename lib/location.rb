@@ -25,6 +25,9 @@ class Location
 
   def explode(owner = "Player 8")
     unit = "Terran Wraith"
-    [ createUnit(owner, unit, 1, self), killUnit(owner, unit) ]
+    [ 
+      createUnit(owner, unit, 1, self),
+      killUnit(owner, unit)
+    ]
   end
 end

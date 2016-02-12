@@ -1,22 +1,23 @@
 require_relative './lib/switch'
 require_relative './lib/map'
-require_relative './lib/dc'
-require_relative './lib/resource'
-require_relative './lib/grouping'
+require_relative './lib/counters/dc'
+require_relative './lib/counters/resource'
+require_relative './lib/expressions/expression'
 
 # visitedTown = Switch.new
 # injured = Switch.new
 
 lirin = Map.new
 
-x = DC.new(min: 0, max: 3)
-# y = DC.new(min: 0, max: 7)
-# z = DC.new(min: -2, max: 1)
+def red; test_cond("red"); end;
+def blue; test_cond("blue"); end;
+def black; test_cond("black"); end;
 
-lirin._if( test_cond("blue") )[
-  x << 2*x,
+x = DC.new(min: 0, max: 7)
+y = DC.new(min: 0, max: 7)
+
+lirin._if( blue )[
+  x << y,
 ]
 
 puts lirin.render
-
-# puts display("blue or green").render_xml

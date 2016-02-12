@@ -1,5 +1,6 @@
-require_relative 'sumexpression'
 require_relative 'expression'
+require_relative 'other_expression'
+require_relative 'sum_expression'
 
 class ProductExpression < Expression
   def constant_default

@@ -1,5 +1,5 @@
-require_relative 'dc'
-require_relative 'productexpression'
+require_relative '../counters/dc'
+require_relative 'product_expression'
 
 class OtherExpression
   attr_accessor :actions, :function, :args, :dc, :triggers

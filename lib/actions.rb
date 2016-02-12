@@ -17,11 +17,11 @@ end
 
 def createUnit(player, unit, n, location)
   Action.new(
-  c:  'Create Unit',
-  gf: format_player(player),
-  u:  unit,
-  n:  n,
-  l:  location
+    c:  'Create Unit',
+    gf: format_player(player),
+    u:  unit,
+    n:  n,
+    l:  location
   )
 end
 
@@ -401,11 +401,11 @@ end
 
 def setScore(player, vmod, n, score_type)
   Action.new(
-  c: 'Set Score',
-  gf: format_player(player),
-  n:  format_vmod(vmod),
-  gs: n,
-  u:  score_type # todo: format score type
+    c: 'Set Score',
+    gf: format_player(player),
+    n:  format_vmod(vmod),
+    gs: n,
+    u:  score_type # todo: format score type
   )
 end
 

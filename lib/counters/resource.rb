@@ -1,8 +1,7 @@
-require_relative 'store'
-require_relative 'actions'
-require_relative 'conditions'
 require_relative 'counter'
-require_relative 'fixnum'
+require_relative '../actions'
+require_relative '../conditions'
+require_relative '../fixnum'
 
 class Resource < Counter
   attr_accessor :player, :resource
@@ -27,6 +26,7 @@ class Resource < Counter
   def representation
     "#{self}"
   end
+
   def to_s
     if resource == :ore
       "ore"
