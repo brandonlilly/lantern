@@ -1,7 +1,35 @@
 require_relative 'product_expression'
 
-module ExpressionTerm
+module Term
   def representation
+    raise NotImplementedError
+  end
+
+  def <<
+    raise NotImplementedError
+  end
+
+  def cost
+    raise NotImplementedError
+  end
+
+  def min
+    raise NotImplementedError
+  end
+
+  def max
+    raise NotImplementedError
+  end
+
+  def offset
+    raise NotImplementedError
+  end
+
+  def unique
+    raise NotImplementedError
+  end
+
+  def count
     raise NotImplementedError
   end
 

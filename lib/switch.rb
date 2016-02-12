@@ -1,54 +1,45 @@
 require_relative 'store'
 require_relative 'actions'
 require_relative 'conditions'
-require_relative 'expressions/sum_expression'
-require_relative 'expressions/product_expression'
+require_relative 'expressions/term'
 require_relative 'assignment'
+require_relative 'wrapper'
 
 class Switch
   include AndOr
   include StoreId
+  include Term
 
-  attr_accessor :inverted
+  attr_accessor :inverted, :name, :switch_id
 
   def initialize(options = {})
-    @inverted = options.fetch(:inverted, false)
+    self.name =       options[:name]
+    self.switch_id =  options[:switch_id]
+    self.inverted =   options.fetch(:inverted, false)
 
-    initialize_store(options)
+    initialize_store(options, @@store)
+  end
+
+  def action(state)
+    setSwitch(switch_id, state)
+  end
+
+  def condition(state)
+    switchIsState(switch_id, state)
   end
 
   def <<(other)
+    if [TrueClass, FalseClass, String, Symbol].include?(other.class)
+      return wrap(:<<, other)
+    end
+
     SwitchAssignment.new(self, other)
     SwitchAssignment.new(self, other).generate # TODO: remove this line later
   end
 
-  def +(other)
-    ProductExpression.new(self) + other
-  end
-
-  def -(other)
-    ProductExpression.new(self) - other
-  end
-
-  def -@
-    ProductExpression.new(self) * -1
-  end
-
-  def *(other)
-    ProductExpression.new(self) * other
-  end
-
-  def %(other)
-    raise NotImplementedError
-  end
-
-  def **(other)
-    raise NotImplementedError
-  end
-
   def ==(other)
     if other.is_a?(TrueClass) || other.is_a?(FalseClass)
-      return switchIsState(id, inverted ? !other : other)
+      return wrap(:==, inverted ? !other : other)
     end
 
     if other.is_a?(Switch)
@@ -60,23 +51,6 @@ class Switch
 
   def !=(other)
     self == !other
-  end
-
-  def <=>(other)
-    representation <=> other.representation
-  end
-
-  def oldSet(other)
-    if [TrueClass, FalseClass, String, Symbol].include?(other.class)
-      return setSwitch(id, other)
-    end
-
-    if other.is_a?(Switch)
-      return [
-        _if( other )[ self << true ],
-        _if( !other )[ self << false ],
-      ]
-    end
   end
 
   def setState(other)
@@ -119,6 +93,7 @@ class Switch
     self.class.new(
       store:    options[:store] || store,
       id:       options[:id] || id,
+      name:       options[:name] || name,
       implicit: options.fetch(:implicit, implicit),
       inverted: options.fetch(:inverted, inverted)
     )
@@ -148,6 +123,26 @@ class Switch
     1
   end
 
+  def >=(other)
+    raise InvalidOperationError
+  end
+
+  def <=(other)
+    raise InvalidOperationError
+  end
+
+  def >(other)
+    raise InvalidOperationError
+  end
+
+  def <(other)
+    raise InvalidOperationError
+  end
+
+  def wrap(operator, state)
+    SwitchWrapper.new(self, operator, state)
+  end
+
   def representation
     "Switch#{id}"
   end
@@ -156,3 +151,5 @@ class Switch
     "Switch#{id}"
   end
 end
+
+class InvalidOperationError; end

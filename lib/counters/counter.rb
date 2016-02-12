@@ -3,7 +3,7 @@ require_relative '../expressions/term'
 
 class Counter
   include AndOr
-  include ExpressionTerm
+  include Term
 
   attr_accessor :min, :max, :step
 

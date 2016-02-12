@@ -3,7 +3,7 @@ require_relative 'product_expression'
 require_relative 'term'
 
 class OtherExpression
-  include ExpressionTerm
+  include Term
 
   attr_accessor :actions, :ret
 
