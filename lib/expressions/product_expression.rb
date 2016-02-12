@@ -84,5 +84,4 @@ class ProductExpression < Expression
     end
     {min: minval, max: maxval}
   end
-
 end

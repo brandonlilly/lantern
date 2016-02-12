@@ -1,130 +1,56 @@
 require_relative '../counters/dc'
 require_relative 'product_expression'
+require_relative 'term'
 
 class OtherExpression
-  attr_accessor :actions, :function, :args, :dc, :triggers
+  include ExpressionTerm
 
-  def initialize(actions, function, *args)
-    self.actions = actions
-    self.function = function
-    self.args = *args
-    self.dc = DC.new
-    self.triggers = []
-    process
+  attr_accessor :actions, :ret
+
+  def initialize(options)
+    self.actions = options[:actions]
+    self.ret = options[:ret]
   end
 
   def <<(other)
     raise NotImplementedError
   end
 
-  def +(other)
-    ProductExpression.new(self) + other
-  end
-
-  def -(other)
-    ProductExpression.new(self) - other
-  end
-
-  def -@
-    ProductExpression.new(self) * -1
-  end
-
-  def *(other)
-    ProductExpression.new(self) * other
-  end
-
-  def /(other)
-    raise NotImplementedError
-  end
-
-  def %(other)
-    raise NotImplementedError
-  end
-
-  def **(other)
-    raise NotImplementedError if !other.is_a?(Integer)
-    (1..other).reduce(1) { |acc, el| acc * self }
-  end
-
-  def ==(other)
-    ProductExpression.new(self) == other
-  end
-
-  def >=(other)
-    ProductExpression.new(self) >= other
-  end
-
-  def <=(other)
-    ProductExpression.new(self) <= other
-  end
-
-  def !=(other)
-    !(self == other)
-  end
-
-  def >(other)
-    self >= other + 1
-  end
-
-  def <(other)
-    self <= other - 1
-  end
-
-  def <=>(other)
-    representation <=> other.representation
-  end
-
-  def process
-    if triggers.empty?
-      triggers << actions
-      triggers << (dc << 0) #TODO: can remove this
-      triggers << (function.call(dc, *args))
-    end
-  end
-
   def generate
-    triggers
+    actions
   end
 
   def min
-    dc.min
+    ret.min
   end
 
   def max
-    dc.max
+    ret.max
   end
 
   def step
-    dc.step
+    ret.step
   end
 
   def to_cond
     raise ArgumentError
-    # dc != 0
+    # ret != 0
   end
 
   def cost
-    dc.cost
+    ret.cost
   end
 
   def offset
     min
   end
 
-  def count(other)
-    args.reduce(0) { |acc, el| acc += el.count(other) }
-  end
-
-  def unique
-    args.map(&:unique).flatten.uniq.sort
-  end
-
   def representation
-    "(" + args.map(&:representation).join(',') + "->" + dc.representation + ")"
+    "(" + args.map(&:representation).join(',') + "->" + ret.representation + ")"
   end
 
   def to_s
-    "(" + args.map(&:representation).join(',') + "->" + dc.representation + ")"
+    "(" + args.map(&:representation).join(',') + "->" + ret.representation + ")"
   end
 end
 
@@ -143,6 +69,9 @@ def custom(fn_name)
       arg
     end
 
-    OtherExpression.new(actions, fn, *new_args)
+    ret = DC.new
+    actions << fn.call(ret, new_args)
+
+    OtherExpression.new(actions: actions, ret: ret)
   end
 end

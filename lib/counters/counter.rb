@@ -1,9 +1,9 @@
-require_relative '../expressions/sum_expression'
-require_relative '../expressions/product_expression'
 require_relative '../assignment'
+require_relative '../expressions/term'
 
 class Counter
   include AndOr
+  include ExpressionTerm
 
   attr_accessor :min, :max, :step
 
@@ -75,63 +75,6 @@ class Counter
   def <<(other)
     CounterAssignment.new(self, other)
     CounterAssignment.new(self, other).generate # TODO: remove this line
-  end
-
-  def +(other)
-    ProductExpression.new(self) + other
-  end
-
-  def -(other)
-    ProductExpression.new(self) - other
-  end
-
-  def -@
-    ProductExpression.new(self) * -1
-  end
-
-  def *(other)
-    ProductExpression.new(self) * other
-  end
-
-  def /(other)
-    raise NotImplementedError
-  end
-
-  def %(other)
-    raise NotImplementedError
-  end
-
-  def **(other)
-    raise NotImplementedError if !other.is_a?(Integer)
-    (1..other).reduce(1) { |acc, el| acc * self }
-  end
-
-  def ==(other)
-    ProductExpression.new(self) == other
-  end
-
-  def >=(other)
-    ProductExpression.new(self) >= other
-  end
-
-  def <=(other)
-    ProductExpression.new(self) <= other
-  end
-
-  def !=(other)
-    !(self == other)
-  end
-
-  def >(other)
-    self >= other + 1
-  end
-
-  def <(other)
-    self <= other - 1
-  end
-
-  def <=>(other)
-    representation <=> other.representation
   end
 
   def to_cond

@@ -31,7 +31,7 @@ class Assignment
   end
 
   def to_s
-    "Assignment(" + object.to_s + "=" + grouping.to_s + ")"
+    "Assignment(" + object.to_s + "=" + expression.to_s + ")"
   end
 end
 

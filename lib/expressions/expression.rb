@@ -120,5 +120,4 @@ class Expression
       ]
     end
   end
-
 end
