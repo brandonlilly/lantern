@@ -1,8 +1,8 @@
 require_relative 'store'
 require_relative 'actions'
 require_relative 'conditions'
-require_relative 'sumexpression'
-require_relative 'productexpression'
+require_relative 'expressions/sum_expression'
+require_relative 'expressions/product_expression'
 require_relative 'assignment'
 
 class Switch

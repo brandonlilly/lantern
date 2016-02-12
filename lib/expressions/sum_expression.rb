@@ -1,4 +1,4 @@
-require_relative 'productexpression'
+require_relative 'product_expression'
 require_relative 'expression'
 
 class SumExpression < Expression

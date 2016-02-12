@@ -1,5 +1,5 @@
-require_relative 'dc'
-require_relative 'productexpression'
+require_relative '../counters/dc'
+require_relative 'product_expression'
 
 class OtherExpression
   attr_accessor :actions, :function, :args, :dc, :triggers
@@ -10,6 +10,7 @@ class OtherExpression
     self.args = *args
     self.dc = DC.new
     self.triggers = []
+    process
   end
 
   def <<(other)
@@ -86,17 +87,14 @@ class OtherExpression
   end
 
   def min
-    process
     dc.min
   end
 
   def max
-    process
     dc.max
   end
 
   def step
-    process
     dc.step
   end
 
@@ -106,7 +104,6 @@ class OtherExpression
   end
 
   def cost
-    process
     dc.cost
   end
 
