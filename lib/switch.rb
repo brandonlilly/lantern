@@ -9,6 +9,7 @@ class Switch
   include AndOr
   include StoreId
   include Term
+  @@store = Store.new
 
   attr_accessor :inverted, :name, :switch_id
 
@@ -94,7 +95,7 @@ class Switch
       store:    options[:store] || store,
       id:       options[:id] || id,
       name:       options[:name] || name,
-      implicit: options.fetch(:implicit, implicit),
+      switch_id:  options[:switch_id] || switch_id,
       inverted: options.fetch(:inverted, inverted)
     )
   end

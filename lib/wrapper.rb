@@ -22,6 +22,14 @@ class SwitchWrapper
     self
   end
 
+  def type
+    'Switch'
+  end
+
+  def type?(cond_type)
+    cond_type == type
+  end
+
   def to_s
     "#{self.class}{ #{var} #{operator} #{value} }"
   end

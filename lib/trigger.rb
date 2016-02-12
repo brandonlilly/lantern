@@ -22,10 +22,6 @@ class Trigger
     self
   end
 
-  def superfluous?
-    actions.empty? || scs?
-  end
-
   def render
     conditions_render = conditions.map(&:render).join("\n")
     actions_render = actions.map(&:render).join("\n")
@@ -117,6 +113,10 @@ class Trigger
     trigs
   end
 
+  def superfluous?
+    actions.empty? || scs? || has_never?
+  end
+  
   private
 
   # check if trigger just clears then sets same switch
@@ -131,6 +131,10 @@ class Trigger
     conditions[0].params[:m] == "is set" &&
     actions[0].params[:n] == "clear" &&
     actions[1].params[:n] == "set"
+  end
+
+  def has_never?
+    conditions.any? {|condition| condition.type?("Never") }
   end
 end
 
