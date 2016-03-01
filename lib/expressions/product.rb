@@ -1,8 +1,8 @@
 require_relative 'expression'
-require_relative 'other_expression'
-require_relative 'sum_expression'
+# require_relative 'custom'
+require_relative 'sum'
 
-class ProductExpression < Expression
+class Product < Expression
   def constant_default
     1
   end
@@ -12,11 +12,11 @@ class ProductExpression < Expression
   end
 
   def +(other)
-    SumExpression.new(self) + other
+    Sum.new(self) + other
   end
 
   def *(other)
-    other = ProductExpression.new(other) if !other.is_a?(ProductExpression)
+    other = Product.new(other) if !other.is_a?(Product)
     self.constant *= other.constant
     other.list.each { |el| insert(el) }
     simplify
@@ -32,9 +32,9 @@ class ProductExpression < Expression
 
     triggers = []
 
-    triggers << list.select { |el| el.is_a?(OtherExpression) }.map(&:generate)
+    # triggers << list.select { |el| el.is_a?(CustomExpr) }.map(&:generate)
 
-    list.map! { |el| el.is_a?(OtherExpression) ? el.dc : el }
+    # list.map! { |el| el.is_a?(CustomExpr) ? el.dc : el }
 
     triggers << list.map do |el|
       temp = DC.new(min: 0, max: el.cost)
@@ -50,7 +50,7 @@ class ProductExpression < Expression
   end
 
   def remove(other)
-    list.select{ |el| el.is_a?(SumExpression) }.each { |el| el.remove(other) }
+    list.select{ |el| el.is_a?(Sum) }.each { |el| el.remove(other) }
     list.delete(other)
     self.constant = 0 if list.empty?
     simplify

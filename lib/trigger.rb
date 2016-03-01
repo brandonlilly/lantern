@@ -58,7 +58,7 @@ class Trigger
 
       if condition.is_a?(Conditional)
         if !condition.inverted
-          cond = Switch.temp
+          cond = Switch.new
           cond_switches << cond
 
           block_actions = condition.action_block.call(cond)
@@ -66,8 +66,8 @@ class Trigger
           trigs.concat(current_trig.unfold)
           current_trig = Trigger.new(conditions: [cond.set?], players: players)
         else
-          cond = Switch.temp
-          temp = Switch.temp
+          cond = Switch.new(name: 'COND')
+          temp = Switch.new(name: 'TEMP')
           cond_switches << cond
           cond_switches << temp
 
@@ -92,7 +92,7 @@ class Trigger
       end
 
       if action.is_a?(Trigger)
-        temp = Switch.temp
+        temp = Switch.new(name: 'NEST')
         current_trig.actions << (temp << true)
         trigs << current_trig
         trigger = action
@@ -100,14 +100,13 @@ class Trigger
         trigger.conditions.unshift(temp.set?)
         trigs.concat(trigger.unfold)
         current_trig = Trigger.new(conditions: [temp.set?], actions: [temp.clear], players: players)
-        temp.destroy
       end
     end
     trigs << current_trig
 
     unless cond_switches.empty?
       trigs << Trigger.new(actions: cond_switches.map(&:clear), players: players)
-      cond_switches.each(&:destroy)
+      cond_switches.each(&:clear)
     end
 
     trigs
@@ -116,7 +115,7 @@ class Trigger
   def superfluous?
     actions.empty? || scs? || has_never?
   end
-  
+
   private
 
   # check if trigger just clears then sets same switch

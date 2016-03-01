@@ -1,8 +1,8 @@
-require_relative '../counters/dc'
-require_relative 'product_expression'
+# require_relative '../counters/dc'
+# require_relative 'product'
 require_relative 'term'
 
-class OtherExpression
+class CustomExpr
   include Term
 
   attr_accessor :actions, :ret
@@ -72,6 +72,6 @@ def custom(fn_name)
     ret = DC.new
     actions << fn.call(ret, new_args)
 
-    OtherExpression.new(actions: actions, ret: ret)
+    CustomExpr.new(actions: actions, ret: ret)
   end
 end

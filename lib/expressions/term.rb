@@ -1,4 +1,4 @@
-require_relative 'product_expression'
+require_relative 'product'
 
 module Term
   def representation
@@ -34,19 +34,19 @@ module Term
   end
 
   def +(other)
-    ProductExpression.new(self) + other
+    Product.new(self) + other
   end
 
   def -(other)
-    ProductExpression.new(self) - other
+    Product.new(self) - other
   end
 
   def -@
-    ProductExpression.new(self) * -1
+    Product.new(self) * -1
   end
 
   def *(other)
-    ProductExpression.new(self) * other
+    Product.new(self) * other
   end
 
   def /(other)
@@ -63,15 +63,15 @@ module Term
   end
 
   def ==(other)
-    ProductExpression.new(self) == other
+    Product.new(self) == other
   end
 
   def >=(other)
-    ProductExpression.new(self) >= other
+    Product.new(self) >= other
   end
 
   def <=(other)
-    ProductExpression.new(self) <= other
+    Product.new(self) <= other
   end
 
   def !=(other)

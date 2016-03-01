@@ -5,10 +5,14 @@ class Counter
   include AndOr
   include Term
 
-  attr_accessor :min, :max, :step
+  attr_accessor :min, :max, :step, :name
+
+  SHIFTED_ZERO = 0 #2**31
+  MAX_INT = 2**32
 
   def initialize(options = {})
     self.max =  options[:max]
+    self.name = options[:name]
     self.min =  options[:min]  || 0
     self.step = options[:step] || 1
 
@@ -69,9 +73,6 @@ class Counter
     (amount + offset) % MAX_INT
   end
 
-  SHIFTED_ZERO = 2**31
-  MAX_INT = 2**32
-
   def <<(other)
     CounterAssignment.new(self, other)
     CounterAssignment.new(self, other).generate # TODO: remove this line
@@ -112,7 +113,7 @@ class Counter
 
   def formatGroup(obj)
     obj = [obj] unless obj.is_a?(Array)
-    raise ArgumentError if obj.any? { |el| !el.is_a?(ProductExpression) && !el.is_a?(Counter)}
+    raise ArgumentError if obj.any? { |el| !el.is_a?(Product) && !el.is_a?(Counter)}
     obj.map { |el| el.is_a?(Counter) ? 1 * el : el }
   end
 

@@ -1,7 +1,7 @@
-require_relative 'product_expression'
+require_relative 'product'
 require_relative 'expression'
 
-class SumExpression < Expression
+class Sum < Expression
   def constant_default
     0
   end
@@ -11,8 +11,8 @@ class SumExpression < Expression
   end
 
   def +(other)
-    other = ProductExpression.new(other) if !other.is_a?(SumExpression) && !other.is_a?(ProductExpression)
-    other = SumExpression.new(other) if !other.is_a?(SumExpression)
+    other = Product.new(other) if !other.is_a?(Sum) && !other.is_a?(Product)
+    other = Sum.new(other) if !other.is_a?(Sum)
     self.constant += other.constant
     other.list.each { |el| insert(el) }
     simplify
@@ -20,7 +20,7 @@ class SumExpression < Expression
   end
 
   def *(other)
-    return ProductExpression.new(self) * other if !other.is_a?(Integer)
+    return Product.new(self) * other if !other.is_a?(Integer)
     return 0 if other == 0
     self.constant *= other
     list.each {|el| el.constant *= other}

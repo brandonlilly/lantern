@@ -1,5 +1,5 @@
-require_relative 'expressions/sum_expression'
-require_relative 'expressions/product_expression'
+require_relative 'expressions/sum'
+require_relative 'expressions/product'
 require_relative 'counters/counter'
 require_relative 'switch'
 
@@ -43,8 +43,8 @@ class CounterAssignment < Assignment
   end
 
   def prepare_expression(expression)
-    expression = ProductExpression.new(expression) if !expression.is_a?(SumExpression) && !expression.is_a?(ProductExpression)
-    expression = SumExpression.new(expression) if !expression.is_a?(SumExpression)
+    expression = Product.new(expression) if !expression.is_a?(Sum) && !expression.is_a?(Product)
+    expression = Sum.new(expression) if !expression.is_a?(Sum)
     expression
   end
 

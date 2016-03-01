@@ -1,4 +1,4 @@
-require_relative '../counters/counter'
+# require_relative '../counters/counter'
 
 class Expression
   attr_accessor :constant, :list

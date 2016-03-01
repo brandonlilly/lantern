@@ -14,8 +14,8 @@ class Switch
   attr_accessor :inverted, :name, :switch_id
 
   def initialize(options = {})
-    self.name =       options[:name]
     self.switch_id =  options[:switch_id]
+    self.name =       options[:name] || 'Switch'
     self.inverted =   options.fetch(:inverted, false)
 
     initialize_store(options, @@store)
@@ -149,7 +149,7 @@ class Switch
   end
 
   def to_s
-    "Switch#{id}"
+    "#{name}##{id}"
   end
 end
 

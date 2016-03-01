@@ -21,6 +21,10 @@ class Map
     trigger
   end
 
+  def eval(&block)
+    instance_eval(&block)
+  end
+
   def render
     triggers.map(&:run).flatten.map(&:render).join("\n")
   end
