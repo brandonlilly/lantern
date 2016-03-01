@@ -1,5 +1,5 @@
-# require_relative '../counters/dc'
-# require_relative 'product'
+require_relative '../counters/dc'
+require_relative 'product'
 require_relative 'term'
 
 class CustomExpr

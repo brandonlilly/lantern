@@ -7,26 +7,30 @@ class Counter
 
   attr_accessor :min, :max, :step, :name
 
-  SHIFTED_ZERO = 0 #2**31
+  SHIFTED_ZERO = 2**31
   MAX_INT = 2**32
 
   def initialize(options = {})
     self.max =  options[:max]
-    self.name = options[:name]
     self.min =  options[:min]  || 0
     self.step = options[:step] || 1
+    self.name = options[:name] || default_name
 
     post_initialize(options)
+  end
+
+  def post_initialize(options)
+    nil
+  end
+
+  def default_name
+    "Counter"
   end
 
   def modifyBounds(options = {})
     self.max =  options[:max]  || max
     self.min =  options[:min]  || min
     self.step = options[:step] || step
-  end
-
-  def post_initialize(options)
-    nil
   end
 
   def implicit
@@ -46,27 +50,28 @@ class Counter
   end
 
   def add(amount)
-    amount == 0 ? [] : action(:add, adjust(amount))
+    return subtract(-amount) if amount < 0
+    amount == 0 ? [] : wrap(:add, adjust(amount))
   end
 
   def subtract(amount)
-    amount == 0 ? [] : action(:subtract, adjust(amount))
+    amount == 0 ? [] : wrap(:subtract, adjust(amount))
   end
 
   def setTo(amount)
-    action(:setto, adjust(amount, SHIFTED_ZERO))
+    wrap(:setto, adjust(amount, SHIFTED_ZERO))
   end
 
   def exactly(amount)
-    condition(:exactly, adjust(amount, SHIFTED_ZERO))
+    wrap(:exactly, adjust(amount, SHIFTED_ZERO))
   end
 
   def atMost(amount)
-    condition(:atmost, adjust(amount, SHIFTED_ZERO))
+    wrap(:atmost, adjust(amount, SHIFTED_ZERO))
   end
 
   def atLeast(amount)
-    condition(:atleast, adjust(amount, SHIFTED_ZERO))
+    wrap(:atleast, adjust(amount, SHIFTED_ZERO))
   end
 
   def adjust(amount, offset = 0)
@@ -110,6 +115,10 @@ class Counter
   end
 
   protected
+
+  def wrap(modifier, amount)
+    DCWrapper.new(self, modifier, amount)
+  end
 
   def formatGroup(obj)
     obj = [obj] unless obj.is_a?(Array)

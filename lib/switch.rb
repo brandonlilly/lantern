@@ -34,7 +34,7 @@ class Switch
       return wrap(:<<, other)
     end
 
-    SwitchAssignment.new(self, other)
+    # SwitchAssignment.new(self, other)
     SwitchAssignment.new(self, other).generate # TODO: remove this line later
   end
 
@@ -52,10 +52,6 @@ class Switch
 
   def !=(other)
     self == !other
-  end
-
-  def setState(other)
-    setSwitch(id, other)
   end
 
   def set(other)

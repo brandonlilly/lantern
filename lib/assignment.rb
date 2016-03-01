@@ -98,7 +98,7 @@ class SwitchAssignment < Assignment
   end
 
   def generate
-    return object.setState(expression) if expression.is_a?(TrueClass) || expression.is_a?(FalseClass)
+    return object << expression if expression.is_a?(TrueClass) || expression.is_a?(FalseClass)
     [
       object << false,
       _if( expression )[

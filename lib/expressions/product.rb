@@ -1,5 +1,4 @@
 require_relative 'expression'
-# require_relative 'custom'
 require_relative 'sum'
 
 class Product < Expression
@@ -33,7 +32,6 @@ class Product < Expression
     triggers = []
 
     # triggers << list.select { |el| el.is_a?(CustomExpr) }.map(&:generate)
-
     # list.map! { |el| el.is_a?(CustomExpr) ? el.dc : el }
 
     triggers << list.map do |el|

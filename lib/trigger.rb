@@ -58,7 +58,7 @@ class Trigger
 
       if condition.is_a?(Conditional)
         if !condition.inverted
-          cond = Switch.new
+          cond = Switch.new(name: 'COND')
           cond_switches << cond
 
           block_actions = condition.action_block.call(cond)
@@ -87,10 +87,6 @@ class Trigger
     end
 
     actions.flatten.each do |action|
-      if action.is_a?(Action)
-        current_trig.actions << action
-      end
-
       if action.is_a?(Trigger)
         temp = Switch.new(name: 'NEST')
         current_trig.actions << (temp << true)
@@ -100,6 +96,9 @@ class Trigger
         trigger.conditions.unshift(temp.set?)
         trigs.concat(trigger.unfold)
         current_trig = Trigger.new(conditions: [temp.set?], actions: [temp.clear], players: players)
+        next
+      else
+        current_trig.actions << action
       end
     end
     trigs << current_trig
@@ -114,6 +113,7 @@ class Trigger
 
   def superfluous?
     actions.empty? || scs? || has_never?
+    false
   end
 
   private

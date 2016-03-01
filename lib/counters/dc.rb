@@ -3,6 +3,7 @@ require_relative '../store'
 require_relative '../actions'
 require_relative '../conditions'
 require_relative '../fixnum'
+require_relative '../wrapper'
 
 class DC < Counter
   include StoreId
@@ -12,13 +13,16 @@ class DC < Counter
     initialize_store(options, @@store)
   end
 
+  def default_name
+    "DC"
+  end
+
   def player
     "Player 1"
   end
 
   def unit
-    # "Terran Marine"
-    "#{self}"
+    "Terran Marine"
   end
 
   def condition(qmod, amount)
@@ -34,6 +38,6 @@ class DC < Counter
   end
 
   def to_s
-    "DC#{id}"
+    "#{name}##{id}"
   end
 end
